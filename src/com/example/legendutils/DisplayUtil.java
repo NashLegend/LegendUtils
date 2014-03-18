@@ -5,9 +5,9 @@ import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.Window;
 
-public class DisplayUtils {
+public class DisplayUtil {
 
-	public DisplayUtils() {
+	public DisplayUtil() {
 		// TODO 自动生成的构造函数存根
 	}
 

@@ -1,8 +1,8 @@
 package com.example.legendutils;
 
-public class MathUtils {
+public class MathUtil {
 
-	public MathUtils() {
+	public MathUtil() {
 		// TODO 自动生成的构造函数存根
 	}
 
