@@ -1,25 +1,62 @@
 package com.example.legendutils;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class ThreadUtil {
 
 	public ThreadUtil() {
-		// TODO 自动生成的构造函数存根
-	}
-
-	public static int setTimeOut() {
-		return 1;
-	}
-
-	public static void clearTimeOut(int id) {
 
 	}
 
-	public static int setInterval() {
-		return 1;
+	public static Timer setTimeOut(TimerTask runnable, int delayMillis) {
+		Timer timer = new Timer();
+		timer.schedule(runnable, delayMillis);
+		return timer;
 	}
 
-	public static void clearInterval(int id) {
+	public static Timer setTimeOut(final Runnable runnable, int delayMillis) {
 
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				runnable.run();
+			}
+		}, delayMillis);
+		return timer;
+	}
+
+	public static void clearTimeOut(Timer timer) {
+		if (timer != null) {
+			timer.cancel();
+		}
+	}
+
+	public static Timer setInterval(TimerTask runnable, int delayMillis,
+			int period) {
+		Timer timer = new Timer();
+		timer.schedule(runnable, delayMillis, period);
+		return timer;
+	}
+
+	public static Timer setInterval(final Runnable runnable, int delayMillis,
+			int period) {
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				runnable.run();
+			}
+		}, delayMillis, period);
+		return timer;
+	}
+
+	public static void clearInterval(Timer timer) {
+		if (timer != null) {
+			timer.cancel();
+		}
 	}
 
 }

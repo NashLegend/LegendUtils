@@ -55,6 +55,10 @@ public class DisplayUtil {
 				.getHeight();
 	}
 
+	public static float getPixelDensity(Context context) {
+		return context.getResources().getDisplayMetrics().density;
+	}
+
 	/**
 	 * 单位转换，将dip转换为px
 	 * 
@@ -66,17 +70,17 @@ public class DisplayUtil {
 		float scale = context.getResources().getDisplayMetrics().density;
 		return (int) (dp * scale + 0.5f);
 	}
-	
 
-    /**
-     * 单位转换，将px转换为dip
-     * @param px
-     * @param context
-     * @return
-     */
-    public static int px2dip(float px, Context context) {
-        float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (px / scale + 0.5f);
+	/**
+	 * 单位转换，将px转换为dip
+	 * 
+	 * @param px
+	 * @param context
+	 * @return
+	 */
+	public static int px2dip(float px, Context context) {
+		float scale = context.getResources().getDisplayMetrics().density;
+		return (int) (px / scale + 0.5f);
 	}
 
 }
