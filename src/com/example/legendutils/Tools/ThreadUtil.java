@@ -1,4 +1,4 @@
-package com.example.legendutils;
+package com.example.legendutils.Tools;
 
 import java.util.Timer;
 import java.util.TimerTask;

@@ -1,4 +1,4 @@
-package com.example.legendutils;
+package com.example.legendutils.Tools;
 
 import android.app.Activity;
 import android.content.Context;
