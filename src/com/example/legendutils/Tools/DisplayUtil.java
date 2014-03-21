@@ -8,7 +8,7 @@ import android.view.Window;
 public class DisplayUtil {
 
 	public DisplayUtil() {
-		// TODO 自动生成的构造函数存根
+		// TODO 自动生成的构造函数存根 
 	}
 
 	/**
