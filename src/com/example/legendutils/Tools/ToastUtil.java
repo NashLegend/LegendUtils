@@ -3,6 +3,12 @@ package com.example.legendutils.Tools;
 import android.content.Context;
 import android.widget.Toast;
 
+/**
+ * showToast为单例，连续使用不会出现toast长时间呆在屏幕上的情况。
+ * makeTextAndShow普通的Toast，将makeText和show连接起来。
+ * 
+ * @author NashLegend
+ */
 public class ToastUtil {
 
 	public static Toast toast;
@@ -17,7 +23,7 @@ public class ToastUtil {
 	 * @param context
 	 * @param text
 	 */
-	public static void show(Context context, String text) {
+	public static void showToast(Context context, String text) {
 		toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
 		toast.show();
 	}
@@ -28,19 +34,19 @@ public class ToastUtil {
 	 * @param context
 	 * @param text
 	 */
-	public static void show(Context context, int resId) {
+	public static void showToast(Context context, int resId) {
 		toast = Toast.makeText(context, resId, Toast.LENGTH_SHORT);
 		toast.show();
 	}
 
 	/**
-	 * 单例，连续使用不会出现toast长时间呆在屏幕上的情况，uration为自定义
+	 * 单例，连续使用不会出现toast长时间呆在屏幕上的情况，duration为自定义
 	 * 
 	 * @param context
 	 * @param text
 	 * @param duration
 	 */
-	public static void show(Context context, String text, int duration) {
+	public static void showToast(Context context, String text, int duration) {
 		toast = Toast.makeText(context, text, duration);
 		toast.show();
 	}
@@ -52,7 +58,7 @@ public class ToastUtil {
 	 * @param text
 	 * @param duration
 	 */
-	public static void show(Context context, int resId, int duration) {
+	public static void showToast(Context context, int resId, int duration) {
 		toast = Toast.makeText(context, resId, duration);
 		toast.show();
 	}
