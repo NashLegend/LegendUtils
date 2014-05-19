@@ -3,12 +3,22 @@ package com.example.legendutils.BuildInAdapters;
 import java.io.File;
 import java.util.ArrayList;
 
+import com.example.legendutils.BuildInViews.FileItemView;
+
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class FileListAdapter extends BaseAdapter {
-	ArrayList<File> list = new ArrayList<File>();
+	private ArrayList<File> list = new ArrayList<File>();
+	private Context mContext;
+
+	public FileListAdapter(Context Context) {
+		mContext = Context;
+	}
 
 	@Override
 	public int getCount() {
@@ -27,7 +37,29 @@ public class FileListAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		return null;
+		ViewHolder holder = null;
+		if (convertView == null) {
+			holder = new ViewHolder();
+			convertView = new FileItemView(mContext);
+			holder.fileItemView = (FileItemView) convertView;
+			convertView.setTag(holder);
+		} else {
+			holder = (ViewHolder) convertView.getTag();
+		}
+		holder.fileItemView.setFileItem(list.get(position));
+		return holder.fileItemView;
+	}
+
+	class ViewHolder {
+		FileItemView fileItemView;
+	}
+
+	public ArrayList<File> getList() {
+		return list;
+	}
+
+	public void setList(ArrayList<File> list) {
+		this.list = list;
 	}
 
 }
