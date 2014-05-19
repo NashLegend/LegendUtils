@@ -1,4 +1,4 @@
-package com.example.legendutils.Views;
+package com.example.legendutils.Dialogs;
 
 import android.app.Dialog;
 import android.content.Context;

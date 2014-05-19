@@ -1,4 +1,4 @@
-package com.example.legendutils.Views;
+package com.example.legendutils.Dialogs;
 
 import com.example.legendutils.R;
 
