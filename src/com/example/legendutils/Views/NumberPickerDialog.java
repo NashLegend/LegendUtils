@@ -25,18 +25,15 @@ public class NumberPickerDialog extends Dialog {
 
 	public NumberPickerDialog(Context context) {
 		super(context);
-		// TODO 自动生成的构造函数存根
 	}
 
 	public NumberPickerDialog(Context context, int theme) {
 		super(context, theme);
-		// TODO 自动生成的构造函数存根
 	}
 
 	public NumberPickerDialog(Context context, boolean cancelable,
 			OnCancelListener cancelListener) {
 		super(context, cancelable, cancelListener);
-		// TODO 自动生成的构造函数存根
 	}
 
 	public interface onNumberSetListener {
@@ -88,9 +85,8 @@ public class NumberPickerDialog extends Dialog {
 				public void onClick(View v) {
 					// TODO 自动生成的方法存根
 					if (numberSetListener != null) {
-						picker.clearFocus();// if not clearFocus, u can't get
-											// the value by softKeyBoard from
-											// the EditText
+						// 如果不clearFocus将得不到EditText的值
+						picker.clearFocus();
 						numberSetListener.onNumberSet(dialog, picker.getValue());
 					}
 				}
