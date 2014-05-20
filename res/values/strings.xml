@@ -3,5 +3,8 @@
     <string name="app_name">LegendUtils</string>
     <string name="number_picker">Number Picker</string>
     <string name="file_opener">File Opener</string>
+    <string name="cancel">取消</string>
+    <string name="ok">确定</string>
+    <string name="back">返回</string>
 
 </resources>

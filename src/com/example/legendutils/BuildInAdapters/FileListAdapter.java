@@ -2,7 +2,9 @@ package com.example.legendutils.BuildInAdapters;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import com.example.legendutils.BuildInVO.FileItem;
 import com.example.legendutils.BuildInViews.FileItemView;
 
 import android.content.Context;
@@ -13,8 +15,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class FileListAdapter extends BaseAdapter {
-	private ArrayList<File> list = new ArrayList<File>();
+	private ArrayList<FileItem> list = new ArrayList<FileItem>();
 	private Context mContext;
+	private File currentDirectory;
 
 	public FileListAdapter(Context Context) {
 		mContext = Context;
@@ -54,12 +57,59 @@ public class FileListAdapter extends BaseAdapter {
 		FileItemView fileItemView;
 	}
 
-	public ArrayList<File> getList() {
+	public ArrayList<FileItem> getList() {
 		return list;
 	}
 
-	public void setList(ArrayList<File> list) {
+	public void setList(ArrayList<FileItem> list) {
 		this.list = list;
+	}
+
+	/**
+	 * 打开文件夹，更新文件列表
+	 * 
+	 * @param file
+	 */
+	public void openFolder(File file) {
+		if (file != null && file.exists() && file.isDirectory()) {
+			if (!file.equals(currentDirectory)) {
+				// 与当前目录不同
+				File[] files = file.listFiles();
+				list.clear();
+				for (int i = 0; i < files.length; i++) {
+					list.add(new FileItem(files[i]));
+				}
+				files = null;
+				notifyDataSetChanged();
+			}
+		}
+	}
+
+	/**
+	 * 选择当前目录下所有文件
+	 */
+	public void selectAll() {
+		for (Iterator<FileItem> iterator = list.iterator(); iterator.hasNext();) {
+			FileItem fileItem = (FileItem) iterator.next();
+			fileItem.setSelected(true);
+		}
+		notifyDataSetChanged();
+	}
+
+	/**
+	 * @return 选中的文件列表
+	 */
+	public ArrayList<File> getSelectedFiles() {
+		ArrayList<File> selectedFiles = new ArrayList<File>();
+		for (Iterator<FileItem> iterator = list.iterator(); iterator.hasNext();) {
+			File file = (File) iterator.next();// 强制转换为File
+			selectedFiles.add(file);
+		}
+		return selectedFiles;
+	}
+
+	public File getCurrentDirectory() {
+		return currentDirectory;
 	}
 
 }
