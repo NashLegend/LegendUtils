@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 /**
  * 文件对象，继承自File
+ * 
  * @author NashLegend
  */
 public class FileItem extends File {
@@ -42,6 +43,14 @@ public class FileItem extends File {
 	 * APK文件
 	 */
 	public static final int FILE_TYPE_APK = 5;
+	/**
+	 * TXT文件
+	 */
+	public static final int FILE_TYPE_TXT = 6;
+	/**
+	 * ZIP文件
+	 */
+	public static final int FILE_TYPE_ZIP = 7;
 
 	// 当然不全……
 	public static final String[] soundSuffixArray = { "mp3", "wav" };
@@ -50,6 +59,8 @@ public class FileItem extends File {
 	public static final String[] videoSuffixArray = { "mp4", "avi", "rmvb",
 			"flv", "mkv", "wmv", };
 	public static final String[] apkSuffixArray = { "apk" };
+	public static final String[] txtSuffixArray = { "txt", "xml" };
+	public static final String[] zipSuffixArray = { "zip", "rar", "gz", "7z" };
 
 	/**
 	 * 文件在文件列表中显示的icon
@@ -114,6 +125,10 @@ public class FileItem extends File {
 				setFileType(FILE_TYPE_SOUND);
 			} else if (isArrayContains(videoSuffixArray, suffix)) {
 				setFileType(FILE_TYPE_VIDEO);
+			} else if (isArrayContains(txtSuffixArray, suffix)) {
+				setFileType(FILE_TYPE_TXT);
+			} else if (isArrayContains(zipSuffixArray, suffix)) {
+				setFileType(FILE_TYPE_ZIP);
 			} else {
 				setFileType(FILE_TYPE_NORMAL);
 			}
@@ -165,26 +180,32 @@ public class FileItem extends File {
 		this.fileType = fileType;
 		switch (fileType) {
 		case FILE_TYPE_APK:
-			setIcon(R.drawable.ic_launcher);
+			setIcon(R.drawable.format_apk);
 			break;
 		case FILE_TYPE_FOLDER:
-			setIcon(R.drawable.ic_launcher);
+			setIcon(R.drawable.format_folder);
 			break;
 		case FILE_TYPE_IMAGE:
-			setIcon(R.drawable.ic_launcher);
+			setIcon(R.drawable.format_picture);
 			break;
 		case FILE_TYPE_NORMAL:
-			setIcon(R.drawable.ic_launcher);
+			setIcon(R.drawable.format_unkown);
 			break;
 		case FILE_TYPE_SOUND:
-			setIcon(R.drawable.ic_launcher);
+			setIcon(R.drawable.format_music);
+			break;
+		case FILE_TYPE_TXT:
+			setIcon(R.drawable.format_text);
 			break;
 		case FILE_TYPE_VIDEO:
-			setIcon(R.drawable.ic_launcher);
+			setIcon(R.drawable.format_media);
+			break;
+		case FILE_TYPE_ZIP:
+			setIcon(R.drawable.format_zip);
 			break;
 
 		default:
-			setIcon(R.drawable.ic_launcher);
+			setIcon(R.drawable.format_unkown);
 			break;
 		}
 	}
