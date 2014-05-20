@@ -3,6 +3,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-    
+
+    <RelativeLayout
+        android:id="@+id/layout_dialog_file_header"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" >
+
+        <Button
+            android:id="@+id/button_dialog_file_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/listview_dialog_file"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+    </ListView>
 
 </LinearLayout>

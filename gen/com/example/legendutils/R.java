@@ -33,11 +33,15 @@ public final class R {
         public static int ic_launcher=0x7f020013;
     }
     public static final class id {
-        public static int button_OK=0x7f060001;
-        public static int image_file_icon=0x7f060003;
-        public static int picker=0x7f060000;
-        public static int rootFileItemView=0x7f060002;
-        public static int text_file_title=0x7f060004;
+        public static int button_OK=0x7f060004;
+        public static int button_dialog_file_back=0x7f060001;
+        public static int button_file_item_select=0x7f060008;
+        public static int image_file_icon=0x7f060006;
+        public static int layout_dialog_file_header=0x7f060000;
+        public static int listview_dialog_file=0x7f060002;
+        public static int picker=0x7f060003;
+        public static int rootFileItemView=0x7f060005;
+        public static int text_file_title=0x7f060007;
     }
     public static final class layout {
         public static int dialog_file=0x7f030000;
