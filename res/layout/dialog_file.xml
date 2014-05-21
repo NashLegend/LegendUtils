@@ -15,7 +15,8 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_weight="0"
-            android:text="@string/back" />
+            android:background="#00000000"
+            android:src="@drawable/back_button" />
 
         <EditText
             android:id="@+id/edittext_dialog_file_path"
@@ -23,8 +24,8 @@
             android:layout_height="48dp"
             android:layout_weight="1" />
 
-        <ImageButton
-            android:id="@+id/imagebutton_dialog_file_all"
+        <CheckBox
+            android:id="@+id/checkbox_dialog_file_all"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_weight="0" />
@@ -36,6 +37,7 @@
         android:layout_height="0dp"
         android:layout_weight="1" >
     </ListView>
+    <!-- ListView的高度必须是确定的，否则在变化的时候 -->
 
     <LinearLayout
         android:id="@+id/layout_dialog_file_footer"

@@ -5,9 +5,6 @@ import java.net.URI;
 
 import com.example.legendutils.R;
 
-import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
-
 /**
  * 文件对象，继承自File
  * 

@@ -9,18 +9,16 @@
     <ImageView
         android:id="@+id/image_file_icon"
         android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="#000fff" />
+        android:layout_height="48dp" />
 
     <TextView
         android:id="@+id/text_file_title"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="#fff000" />
+        android:layout_weight="1"/>
 
-    <Button
-        android:id="@+id/button_file_item_select"
+    <CheckBox
+        android:id="@+id/checkbox_file_item_select"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:focusable="false" />

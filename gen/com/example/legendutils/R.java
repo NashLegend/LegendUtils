@@ -11,35 +11,36 @@ public final class R {
     public static final class attr {
     }
     public static final class drawable {
-        public static int format_apk=0x7f020000;
-        public static int format_app=0x7f020001;
-        public static int format_chm=0x7f020002;
-        public static int format_ebook=0x7f020003;
-        public static int format_excel=0x7f020004;
-        public static int format_flash=0x7f020005;
-        public static int format_folder=0x7f020006;
-        public static int format_html=0x7f020007;
-        public static int format_media=0x7f020008;
-        public static int format_music=0x7f020009;
-        public static int format_pdf=0x7f02000a;
-        public static int format_picture=0x7f02000b;
-        public static int format_picture_broken=0x7f02000c;
-        public static int format_ppt=0x7f02000d;
-        public static int format_text=0x7f02000e;
-        public static int format_torrent=0x7f02000f;
-        public static int format_unkown=0x7f020010;
-        public static int format_word=0x7f020011;
-        public static int format_zip=0x7f020012;
-        public static int ic_launcher=0x7f020013;
+        public static int back_button=0x7f020000;
+        public static int format_apk=0x7f020001;
+        public static int format_app=0x7f020002;
+        public static int format_chm=0x7f020003;
+        public static int format_ebook=0x7f020004;
+        public static int format_excel=0x7f020005;
+        public static int format_flash=0x7f020006;
+        public static int format_folder=0x7f020007;
+        public static int format_html=0x7f020008;
+        public static int format_media=0x7f020009;
+        public static int format_music=0x7f02000a;
+        public static int format_pdf=0x7f02000b;
+        public static int format_picture=0x7f02000c;
+        public static int format_picture_broken=0x7f02000d;
+        public static int format_ppt=0x7f02000e;
+        public static int format_text=0x7f02000f;
+        public static int format_torrent=0x7f020010;
+        public static int format_unkown=0x7f020011;
+        public static int format_word=0x7f020012;
+        public static int format_zip=0x7f020013;
+        public static int ic_launcher=0x7f020014;
     }
     public static final class id {
         public static int button_OK=0x7f060009;
         public static int button_dialog_file_cancel=0x7f060006;
         public static int button_dialog_file_ok=0x7f060007;
-        public static int button_file_item_select=0x7f06000d;
+        public static int checkbox_dialog_file_all=0x7f060003;
+        public static int checkbox_file_item_select=0x7f06000d;
         public static int edittext_dialog_file_path=0x7f060002;
         public static int image_file_icon=0x7f06000b;
-        public static int imagebutton_dialog_file_all=0x7f060003;
         public static int imagebutton_dialog_file_back=0x7f060001;
         public static int layout_dialog_file_footer=0x7f060005;
         public static int layout_dialog_file_header=0x7f060000;

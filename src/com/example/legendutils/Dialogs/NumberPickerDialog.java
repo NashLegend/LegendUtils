@@ -88,6 +88,7 @@ public class NumberPickerDialog extends Dialog {
 						// 如果不clearFocus将得不到EditText的值
 						picker.clearFocus();
 						numberSetListener.onNumberSet(dialog, picker.getValue());
+						dialog.dismiss();
 					}
 				}
 			});
