@@ -2,13 +2,14 @@ package com.example.legendutils.Tools;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Window;
 
 public class DisplayUtil {
 
 	public DisplayUtil() {
-		// TODO 自动生成的构造函数存根 
+		// TODO 自动生成的构造函数存根
 	}
 
 	/**
@@ -40,7 +41,7 @@ public class DisplayUtil {
 	 * 
 	 * @return
 	 */
-	public int getWindowWidth(Activity activity) {
+	public static int getWindowWidth(Activity activity) {
 		return activity.getWindow().findViewById(Window.ID_ANDROID_CONTENT)
 				.getWidth();
 	}
@@ -50,13 +51,46 @@ public class DisplayUtil {
 	 * 
 	 * @return
 	 */
-	public int getWindowHeight(Activity activity) {
+	public static int getWindowContentHeight(Activity activity) {
 		return activity.getWindow().findViewById(Window.ID_ANDROID_CONTENT)
 				.getHeight();
 	}
+	
+	/**
+	 * 返回程序window高度，不包括标题栏
+	 * 
+	 * @return
+	 */
+	public static int getWindowHeight(Activity activity) {
+		return getScreenHeight(activity)-getStatusBarHeight(activity);
+	}
 
+	/**
+	 * 返回屏幕像素密度
+	 * 
+	 * @param context
+	 * @return
+	 */
 	public static float getPixelDensity(Context context) {
 		return context.getResources().getDisplayMetrics().density;
+	}
+
+	/**
+	 * 返回状态栏高度
+	 * 
+	 * @param activity
+	 * @return
+	 */
+	public static int getStatusBarHeight(Activity activity) {
+		Rect outRect = new Rect();
+		activity.getWindow().getDecorView()
+				.getWindowVisibleDisplayFrame(outRect);
+		return outRect.top;
+	}
+
+	public static int getTitleBarHeight(Activity activity) {
+		return getScreenHeight(activity) - getWindowContentHeight(activity)
+				- getStatusBarHeight(activity);
 	}
 
 	/**
