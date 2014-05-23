@@ -9,7 +9,11 @@ import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
 
 /**
  * 将下面两行添加到APP的Application文件的onCreate()方法里。 CrashReporter crashReporter=new
@@ -37,11 +41,37 @@ public class CrashReporter implements UncaughtExceptionHandler {
         ByteArrayOutputStream baos = null;
         PrintStream printStream = null;
 
-        String mtypeString = android.os.Build.MODEL;
-        String mSystem = android.os.Build.VERSION.RELEASE;
+        TelephonyManager telephonyManager = (TelephonyManager) mContext
+                .getSystemService(Context.TELEPHONY_SERVICE);
+        PackageManager pm = mContext.getPackageManager();
+        PackageInfo pi;
+        String versionCode = "";
+        String versionName = "";
+        try {
+            pi = pm.getPackageInfo(mContext.getPackageName(), 0);
+            versionCode = pi.versionCode + "";
+            versionName = pi.versionName == null ? "-1" : pi.versionName;
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
 
+        String mtypeString = android.os.Build.MODEL == null ? "-1" : android.os.Build.MODEL;
+        String mSystem = android.os.Build.VERSION.RELEASE == null ? "-1"
+                : android.os.Build.VERSION.RELEASE;
+        String manufacturer = android.os.Build.MANUFACTURER == null ? "-1"
+                : android.os.Build.MANUFACTURER;
+        String networkOperator = telephonyManager.getNetworkOperatorName() == null ? "-1"
+                : telephonyManager.getNetworkOperatorName();
+        String IMEI = telephonyManager.getDeviceId() == null ? "-1" : telephonyManager
+                .getDeviceId();
+
+        infoString += "APP版本号：" + versionCode + "\n";
+        infoString += "APP版本名：" + versionName + "\n";
         infoString += "手机型号：" + mtypeString + "\n";
         infoString += "系统版本：" + mSystem + "\n";
+        infoString += "手机厂商：" + manufacturer + "\n";
+        infoString += "运营商：" + networkOperator + "\n";
+        infoString += "IMEI：" + IMEI + "\n";
 
         long threadId = thread.getId();
         infoString += ("ThreadInfo : Thread.getName()=" + thread.getName()
