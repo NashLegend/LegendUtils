@@ -125,10 +125,19 @@ public class CrashReporter implements UncaughtExceptionHandler {
 				fis.read(data);
 				CrashLog = new String(data);
 				data = null;
+				fis.close();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		} finally {
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
 		return CrashLog;
 	}
@@ -145,6 +154,18 @@ public class CrashReporter implements UncaughtExceptionHandler {
 
 		return file;
 	}
+	
+	public static void clearCrashLog(Context context) {
+	    File file = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/" + context.getPackageName() + "/Log/CrashLog");
+	    if (file.exists()) {
+            try {
+                file.delete();
+            } catch (Exception e) {
+                
+            }
+        }
+    }
 
 	/**
 	 * 设置崩溃时的回调
