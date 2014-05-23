@@ -21,6 +21,11 @@ import android.telephony.TelephonyManager;
  * Thread.setDefaultUncaughtExceptionHandler(crashReporter);
  * 如果需要Application处理崩溃问题，比如关闭应用程序，则需要调用如下：
  * crashReporter.setOnCrashListener(xxx);
+ * 如果在CrashListener.onCrash()里面想调用系统默认的Force Close对话框，可做如下操作：
+ * 在执行Thread.setDefaultUncaughtExceptionHandler (crashReporter)之前先定义一个系统默认的
+ * UncaughtExceptionHandler mUncaughtExceptionHandler;
+ * 然后在CrashListener.onCrash()里面添加mUncaughtExceptionHandler
+ * .uncaughtException(thread, ex);
  * 
  * @author NashLegend
  */
@@ -101,7 +106,7 @@ public class CrashReporter implements UncaughtExceptionHandler {
         writeCrashLog(infoString);
 
         if (onCrashListener != null) {
-            onCrashListener.onCrash(infoString);
+            onCrashListener.onCrash(infoString, thread, ex);
         }
     }
 
@@ -214,7 +219,7 @@ public class CrashReporter implements UncaughtExceptionHandler {
      * @author NashLegend
      */
     public interface CrashListener {
-        void onCrash(String info);
+        void onCrash(String info, Thread thread, Throwable ex);
     }
 
 }
