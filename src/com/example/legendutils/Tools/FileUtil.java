@@ -10,15 +10,68 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.UUID;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
+import android.provider.MediaStore.Video.Thumbnails;
 
 /**
- * 方法线程安全否
+ * 方法线程安全不
  * 
  * @author NashLegend
  * 
  */
 public class FileUtil {
+
+	/**
+	 * 普通文件
+	 */
+	public static final int FILE_TYPE_UNKNOWN = 0;
+	/**
+	 * 文件夹
+	 */
+	public static final int FILE_TYPE_FOLDER = 1;
+	/**
+	 * 声音类型的文件
+	 */
+	public static final int FILE_TYPE_SOUND = 2;
+	/**
+	 * 图像类型的文件
+	 */
+	public static final int FILE_TYPE_IMAGE = 3;
+	/**
+	 * 视频类型的文件
+	 */
+	public static final int FILE_TYPE_VIDEO = 4;
+	/**
+	 * APK文件
+	 */
+	public static final int FILE_TYPE_APK = 5;
+	/**
+	 * TXT文件
+	 */
+	public static final int FILE_TYPE_TXT = 6;
+	/**
+	 * ZIP文件
+	 */
+	public static final int FILE_TYPE_ZIP = 7;
+
+	// 类型当然不全……
+	public static final String[] soundSuffixArray = { "mp3", "wav" };
+	public static final String[] imageSuffixArray = { "jpg", "jpeg", "png",
+			"bmp", "gif" };
+	public static final String[] videoSuffixArray = { "mp4", "avi", "rmvb",
+			"flv", "mkv", "wmv", };
+	public static final String[] apkSuffixArray = { "apk" };
+	public static final String[] txtSuffixArray = { "txt", "xml" };
+	public static final String[] zipSuffixArray = { "zip", "rar", "gz", "7z" };
 
 	interface FileOperationListener {
 
@@ -315,6 +368,18 @@ public class FileUtil {
 		return ensureFileIsDirectory(destFile.getParentFile());
 	}
 
+	private static boolean isArrayContains(String[] strs, String suffix) {
+		if (strs == null || suffix == null) {
+			return false;
+		}
+		for (int i = 0; i < strs.length; i++) {
+			if (suffix.equals(strs[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// 异步操作
 
 	public static Runnable copy2FileAsync(File sourceFile, File destFile) {
@@ -338,11 +403,198 @@ public class FileUtil {
 	}
 
 	/**
-	 * 提取文件缩略图
+	 * 提取文件缩略图，默认大小96 x 96. 如果没有指定context，将不会取到apk文件的缩略图
 	 * 
+	 * @param file
 	 * @return
 	 */
-	public static Bitmap extractFileThumbnail() {
-		return null;
+	public static Bitmap extractFileThumbnail(File file, Context context) {
+		int type = getFileType(file);
+		Bitmap thumb = null;
+		switch (type) {
+		case FILE_TYPE_IMAGE:// 获取图像文件缩略图
+			thumb = getImageFileThumbnail(file, 96, 96);
+			break;
+		case FILE_TYPE_VIDEO:// 获取视频文件缩略图
+			thumb = getVideoFileThumbnail(file, 96, 96);
+			break;
+		case FILE_TYPE_APK:// 获取apk文件缩略图
+			thumb = getApkIcon(context, file.getAbsolutePath());
+			break;
+
+		default:
+			break;
+		}
+		return thumb;
+	}
+
+	/**
+	 * 提取文件缩略图,指定缩略图大小, 如果没有指定context，将不会取到apk文件的缩略图
+	 * 
+	 * @param file
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	public static Bitmap extractFileThumbnail(File file, int width, int height,
+			Context context) {
+		int type = getFileType(file);
+		Bitmap thumb = null;
+		switch (type) {
+		case FILE_TYPE_IMAGE:// 获取图像文件缩略图
+			thumb = getImageFileThumbnail(file, width, height);
+			break;
+		case FILE_TYPE_VIDEO:// 获取视频文件缩略图
+			thumb = getVideoFileThumbnail(file, width, height);
+			break;
+		case FILE_TYPE_APK:// 获取apk文件按指定尺寸缩放过的缩略图，
+			thumb = getApkResizedIcon(context, file.getAbsolutePath(), width,
+					height);
+			break;
+
+		default:
+			break;
+		}
+		return thumb;
+	}
+
+	public static Bitmap getImageFileThumbnail(File file, int width, int height) {
+		Bitmap bitmap = null;
+		String path = file.getAbsolutePath();
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		// 只获取这个图片的宽和高
+		bitmap = BitmapFactory.decodeFile(path, options);
+		options.inJustDecodeBounds = false;
+		// 计算缩放比,出现错误的时候有可能为-1
+		int h = options.outHeight;
+		int w = options.outWidth;
+		if (h > 0 && w > 0) {
+			int beWidth = w / width;
+			int beHeight = h / height;
+			int be = 1;
+			if (beWidth < beHeight) {
+				be = beWidth;
+			} else {
+				be = beHeight;
+			}
+			if (be <= 0) {
+				be = 1;
+			}
+			options.inSampleSize = be;
+			// 重新读入图片，读取缩放后的bitmap，注意这次要把options.inJustDecodeBounds 设为 false
+			bitmap = BitmapFactory.decodeFile(path, options);
+			// 利用ThumbnailUtils来创建缩略图，这里要指定要缩放哪个Bitmap对象
+			bitmap = ThumbnailUtils.extractThumbnail(bitmap, width, height,
+					ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+		}
+
+		return bitmap;
+	}
+
+	public static Bitmap getVideoFileThumbnail(File file, int width, int height) {
+		// MINI_KIND: 512 x 384 ； MICRO_KIND: 96 x 96
+		Bitmap thumb = null;
+		if (width > 96 || height > 96) {
+			// 大于96 x 96，则取MINI_KIND的缩略图并在此基础上再次抽取
+			thumb = ThumbnailUtils.extractThumbnail(ThumbnailUtils
+					.createVideoThumbnail(file.getAbsolutePath(),
+							Thumbnails.MINI_KIND), width, height,
+					ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+		} else if (width == 96 && height == 96) {
+			thumb = ThumbnailUtils.createVideoThumbnail(file.getAbsolutePath(),
+					Thumbnails.MICRO_KIND);
+		} else {
+			// 小于96 x 96，则取MICRO_KIND的缩略图并在此基础上再次抽取
+			thumb = ThumbnailUtils.extractThumbnail(ThumbnailUtils
+					.createVideoThumbnail(file.getAbsolutePath(),
+							Thumbnails.MICRO_KIND), width, height,
+					ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+		}
+
+		return thumb;
+	}
+
+	/**
+	 * 获取apk文件按指定尺寸缩放过的缩略图
+	 * 
+	 * @param context
+	 * @param apkPath
+	 * @return
+	 */
+	public static Bitmap getApkResizedIcon(Context context, String apkPath,
+			int width, int height) {
+		Bitmap thumb = getApkIcon(context, apkPath);
+		if (thumb != null) {
+			return ThumbnailUtils.extractThumbnail(thumb, width, height,
+					ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+		}
+		return thumb;
+	}
+
+	/**
+	 * 获取apk文件缩略图将不会改变icon大小
+	 * 
+	 * @param context
+	 * @param apkPath
+	 * @return
+	 */
+	public static Bitmap getApkIcon(Context context, String apkPath) {
+		Bitmap thumb = null;
+		PackageManager pm = context.getPackageManager();
+		PackageInfo info = pm.getPackageArchiveInfo(apkPath,
+				PackageManager.GET_ACTIVITIES);
+		if (info != null) {
+			ApplicationInfo appInfo = info.applicationInfo;
+			appInfo.sourceDir = apkPath;
+			appInfo.publicSourceDir = apkPath;
+			try {
+				thumb = ((BitmapDrawable) appInfo.loadIcon(pm)).getBitmap();
+			} catch (OutOfMemoryError e) {
+
+			}
+		}
+		return thumb;
+	}
+
+	/**
+	 * 根据后缀取得文件类型,FILE_TYPE_IMAGE,FILE_TYPE_SOUND......
+	 */
+	public static int getFileType(File file) {
+		if (file.isDirectory()) {
+			return FILE_TYPE_FOLDER;
+		} else {
+			String suffix = getFileSuffix(file);
+			if (isArrayContains(apkSuffixArray, suffix)) {
+				return FILE_TYPE_APK;
+			} else if (isArrayContains(imageSuffixArray, suffix)) {
+				return FILE_TYPE_IMAGE;
+			} else if (isArrayContains(soundSuffixArray, suffix)) {
+				return FILE_TYPE_SOUND;
+			} else if (isArrayContains(videoSuffixArray, suffix)) {
+				return FILE_TYPE_VIDEO;
+			} else if (isArrayContains(txtSuffixArray, suffix)) {
+				return FILE_TYPE_TXT;
+			} else if (isArrayContains(zipSuffixArray, suffix)) {
+				return FILE_TYPE_ZIP;
+			} else {
+				return FILE_TYPE_UNKNOWN;
+			}
+		}
+	}
+
+	/**
+	 * 获得文件后缀
+	 */
+	public static String getFileSuffix(File file) {
+		String fileName = file.getName();
+		String suffix = "";
+		int offset = fileName.lastIndexOf(".");
+		// -1则没有后缀。0,则表示是一个隐藏文件而没有后缀，offset == fileName.length() -
+		// 1，表示"."是最后一个字符，没有后缀
+		if (offset > 0 && offset < fileName.length() - 1) {
+			suffix = fileName.substring(offset + 1);
+		}
+		return suffix;
 	}
 }
