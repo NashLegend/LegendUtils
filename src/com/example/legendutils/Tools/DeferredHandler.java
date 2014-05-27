@@ -10,6 +10,9 @@ import java.util.ListIterator;
 
 /**
  * 先进先出顺序执行任务的队列，来自Android Launcher2
+ * 
+ * @author Google.Inc
+ * 
  */
 public class DeferredHandler {
 	private LinkedList<Pair<Runnable, Integer>> mQueue = new LinkedList<Pair<Runnable, Integer>>();
