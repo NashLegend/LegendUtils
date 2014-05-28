@@ -57,7 +57,7 @@ public class DisplayUtil {
 	}
 	
 	/**
-	 * 返回程序window高度，不包括标题栏
+	 * 返回程序window高度，不包括通知栏
 	 * 
 	 * @return
 	 */
