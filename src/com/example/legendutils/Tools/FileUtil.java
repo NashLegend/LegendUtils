@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
 import java.util.Enumeration;
-import java.util.UUID;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedOutputStream;
 
@@ -20,19 +19,19 @@ import org.apache.tools.zip.ZipOutputStream;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore.Video.Thumbnails;
 
 /**
- * 方法线程安全不
+ * Thread-safe?
+ * 
+ * 复制、移动、删除、压缩、解压、抽取缩略图、取得文件类型、文件/文件夹大小计算、文件夹子文件数量计算、
  * 
  * @author NashLegend
  * 
@@ -89,6 +88,11 @@ public class FileUtil {
 	public static final String[] docSuffixArray = { "doc", "docx", "ppt",
 			"pptx", "xsl", "xslx" };
 
+	// 写文件模式,可组合使用
+	public static final int Operation_Overwrite = 0x1;// 如有重名覆盖文件/文件夹
+	public static final int Operation_Merge = 0x2;// 合并文件夹
+	public static final int Operation_Skip = 0x4;// 如有同名文件，则跳过
+
 	interface FileOperationListener {
 
 		public void onComplete();
@@ -101,6 +105,10 @@ public class FileUtil {
 
 	private static final int BUFFER = 8192;
 
+	/**
+	 * @param sourceFile
+	 * @param destFile
+	 */
 	public static void zip(File sourceFile, File destFile) {
 		if (!sourceFile.exists())
 			throw new NullPointerException("sourceFile not exist");
@@ -117,6 +125,10 @@ public class FileUtil {
 		}
 	}
 
+	/**
+	 * @param sourceFile
+	 * @param destFile
+	 */
 	public static void zip(File[] sourceFile, File destFile) {
 		for (int i = 0; i < sourceFile.length; i++) {
 			File file = sourceFile[i];
@@ -139,6 +151,11 @@ public class FileUtil {
 		}
 	}
 
+	/**
+	 * @param sourceFile
+	 * @param destFile
+	 * @throws Exception
+	 */
 	public static void unZip(File sourceFile, File destFile) throws Exception {
 		if (!sourceFile.exists()) {
 			throw new NullPointerException("sourceFile not exist");
@@ -174,6 +191,116 @@ public class FileUtil {
 	}
 
 	/**
+	 * @param file
+	 * @return
+	 */
+	public static int getNumFilesInFolder(File file) {
+		if (file == null) {
+			throw new NullPointerException("file cannot be null");
+		}
+		if (!file.exists()) {
+			throw new NullPointerException("file does not exist");
+		}
+		if (file.isFile()) {
+			throw new ClassCastException("file is not a directory");
+		}
+		return getSubfilesNumberInFolder(file, false, true);
+	}
+
+	/**
+	 * @param file
+	 * @param includeHiddleFiles
+	 * @param includeFolder
+	 * @return
+	 */
+	public static int getNumFilesInFolder(File file,
+			boolean includeHiddleFiles, boolean includeFolder) {
+		if (file == null) {
+			throw new NullPointerException("file cannot be null");
+		}
+		if (!file.exists()) {
+			throw new NullPointerException("file does not exist");
+		}
+		if (file.isFile()) {
+			throw new ClassCastException("file is not a directory");
+		}
+		return getSubfilesNumberInFolder(file, includeHiddleFiles,
+				includeFolder);
+	}
+
+	/**
+	 * @param file
+	 * @param includeHiddleFiles
+	 * @param includeFolder
+	 * @return
+	 */
+	private static int getSubfilesNumberInFolder(File file,
+			boolean includeHiddleFiles, boolean includeFolder) {
+		int size = 0;
+		File[] files = file.listFiles();
+		if (files != null) {
+			for (int i = 0; i < files.length; i++) {
+				File file2 = files[i];
+				if (!includeHiddleFiles && file2.isHidden()) {
+					continue;
+				}
+				if (file2.isDirectory()) {
+					size += getSubfilesNumberInFolder(file2,
+							includeHiddleFiles, includeFolder)
+							+ (includeFolder ? 1 : 0);
+				} else {
+					size += 1;
+				}
+			}
+		}
+		return size;
+	}
+
+	public static long getFileSize(File file) {
+		long size = 0L;
+		if (file != null && file.exists()) {
+			File[] files = { file };
+			return getFileSize(files);
+		}
+		return size;
+	}
+
+	public static long getFileSize(File[] files) {
+		if (files == null) {
+			throw new NullPointerException("files cannot be null");
+		}
+		long size = 0L;
+		for (int i = 0; i < files.length; i++) {
+			File file = files[i];
+			if (file != null && file.exists()) {
+				if (file.isDirectory()) {
+					size += getSilgleFolderSize(file);
+				} else {
+					size += file.length();
+				}
+			}
+		}
+
+		return size;
+	}
+
+	private static long getSilgleFolderSize(File file) {
+		long size = 0L;
+		File[] files = file.listFiles();
+		for (int i = 0; i < files.length; i++) {
+			File file2 = files[i];
+			if (file2.isDirectory()) {
+				size += getSilgleFolderSize(file2);
+			} else {
+				size += file2.length();
+			}
+		}
+		// 文件夹占据4k,或者更多，取决于里面文件数量
+		size += file.length();
+		return size;
+	}
+
+	/**
 	 * @param sourceFile
 	 * @param destFile
 	 * @return
@@ -201,14 +328,43 @@ public class FileUtil {
 		if (!sourceFile.exists()) {
 			throw new NullPointerException("sourceFile does not exist");
 		}
+		File[] sourceFiles = { sourceFile };
+		return move2Directory(sourceFiles, destFile);
+	}
+
+	public static boolean copy2Directory(File[] sourceFiles, File destFile) {
+
+		if (sourceFiles == null || destFile == null) {
+			throw new NullPointerException(sourceFiles == null ? "sourceFile"
+					: "destFile" + " cannot be null");
+		}
+
+		if (sourceFiles.length == 0) {
+			// no sourceFiles to be copied
+			return true;
+		}
+
+		for (int i = 0; i < sourceFiles.length; i++) {
+			File file = sourceFiles[i];
+			if (file == null || !file.exists()) {
+				throw new NullPointerException(
+						"one or more sourceFiles not exist");
+			}
+		}
+
 		if (ensureFileIsDirectory(destFile)) {
-			File finalFile = new File(destFile.getAbsolutePath(),
-					sourceFile.getName());
-			return copy2File(sourceFile, finalFile);
+			for (int i = 0; i < sourceFiles.length; i++) {
+				File sourceFile = sourceFiles[i];
+				File finalFile = new File(destFile.getAbsolutePath(),
+						sourceFile.getName());
+				if (!copy2File(sourceFile, finalFile)) {
+					return false;
+				}
+			}
+			return true;
 		} else {
 			return false;
 		}
-
 	}
 
 	/**
@@ -242,11 +398,38 @@ public class FileUtil {
 		if (!sourceFile.exists()) {
 			throw new NullPointerException("sourceFile does not exist");
 		}
+		File[] sourceFiles = { sourceFile };
+		return move2Directory(sourceFiles, destFile);
+	}
+
+	public static boolean move2Directory(File[] sourceFiles, File destFile) {
+		if (sourceFiles == null || destFile == null) {
+			throw new NullPointerException(sourceFiles == null ? "sourceFile"
+					: "destFile" + " cannot be null");
+		}
+
+		if (sourceFiles.length == 0) {
+			// no sourceFiles to be copied
+			return true;
+		}
+
+		for (int i = 0; i < sourceFiles.length; i++) {
+			File file = sourceFiles[i];
+			if (file == null || !file.exists()) {
+				throw new NullPointerException(
+						"one or more sourceFiles not exist");
+			}
+		}
 		if (ensureFileIsDirectory(destFile)) {
-			// 走到这一步说明已经存在了destFile并且deskFile是目录
-			File finalFile = new File(destFile.getAbsolutePath(),
-					sourceFile.getName());
-			return move2File(sourceFile, finalFile);
+			for (int i = 0; i < sourceFiles.length; i++) {
+				File sourceFile = sourceFiles[i];
+				File finalFile = new File(destFile.getAbsolutePath(),
+						sourceFile.getName());
+				if (!move2File(sourceFile, finalFile)) {
+					return false;
+				}
+			}
+			return true;
 		} else {
 			return false;
 		}
@@ -647,7 +830,7 @@ public class FileUtil {
 		}
 		// 如果一个文件不存在，则isDirectory必然为false，而当mkdirs后isDirectory就是true了
 		if (destFile.exists()) {
-			// 如果destFile存在且是个文件则直接返回false
+			// 如果destFile存在且不是个文件则直接返回false，还是删除？ TODO
 			if (!destFile.isDirectory()) {
 				return false;
 			}
@@ -703,7 +886,7 @@ public class FileUtil {
 		}
 		return false;
 	}
-	
+
 	private static void zip(File file, ZipOutputStream out, String basedir) {
 		if (file.isDirectory()) {
 			zipDirectory(file, out, basedir);
