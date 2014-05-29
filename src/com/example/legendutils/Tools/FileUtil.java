@@ -13,6 +13,7 @@ import java.util.Enumeration;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedOutputStream;
 
+import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.apache.tools.zip.ZipOutputStream;
@@ -88,9 +89,10 @@ public class FileUtil {
 	public static final String[] docSuffixArray = { "doc", "docx", "ppt",
 			"pptx", "xsl", "xslx" };
 
-	// 写文件模式,可组合使用
-	public static final int Operation_Overwrite = 0x1;// 重名文件覆盖
-	public static final int Operation_Merge = 0x2;// 重名文件夹合并
+	// 写文件模式,可组合使用，sourceFile和destFile都是文件夹的情况三种模式都不会删除文件夹
+	public static final int Operation_Ski_All = 0x0;// 重名直接跳过
+	public static final int Operation_Merge = 0x1;// 只合并文件夹并不替换文件，意味着不删除任何文件
+	public static final int Operation_Merge_And_Overwrite = 0x2;// 合并文件夹并替换文件
 
 	interface FileOperationListener {
 
@@ -227,34 +229,6 @@ public class FileUtil {
 				includeFolder);
 	}
 
-	/**
-	 * @param file
-	 * @param includeHiddleFiles
-	 * @param includeFolder
-	 * @return
-	 */
-	private static int getSubfilesNumberInFolder(File file,
-			boolean includeHiddleFiles, boolean includeFolder) {
-		int size = 0;
-		File[] files = file.listFiles();
-		if (files != null) {
-			for (int i = 0; i < files.length; i++) {
-				File file2 = files[i];
-				if (!includeHiddleFiles && file2.isHidden()) {
-					continue;
-				}
-				if (file2.isDirectory()) {
-					size += getSubfilesNumberInFolder(file2,
-							includeHiddleFiles, includeFolder)
-							+ (includeFolder ? 1 : 0);
-				} else {
-					size += 1;
-				}
-			}
-		}
-		return size;
-	}
-
 	public static long getFileSize(File file) {
 		long size = 0L;
 		if (file != null && file.exists()) {
@@ -283,43 +257,29 @@ public class FileUtil {
 		return size;
 	}
 
-	private static long getSilgleFolderSize(File file) {
-		long size = 0L;
-		File[] files = file.listFiles();
-		for (int i = 0; i < files.length; i++) {
-			File file2 = files[i];
-			if (file2.isDirectory()) {
-				size += getSilgleFolderSize(file2);
-			} else {
-				size += file2.length();
-			}
-		}
-		// 文件夹占据4k,或者更多，取决于里面文件数量
-		size += file.length();
-		return size;
-	}
-
 	/**
 	 * @param sourceFile
 	 * @param destFile
 	 * @return
 	 */
-	public static boolean copy2File(File sourceFile, File destFile) {
-		if (ensureSourceAndDestFileValid(sourceFile, destFile)) {
+	public static boolean copy2File(File sourceFile, File destFile,
+			int operationType) {
+		if (ensureSourceAndDestFileValid(sourceFile, destFile, operationType)) {
+			if (sourceFile.equals(destFile)) {
+				return true;
+			}
 			if (sourceFile.isFile()) {
-				if (sourceFile.equals(destFile)) {
-					return true;
-				}
-				return copy2SingleFile(sourceFile, destFile);
+				return copy2SingleFile(sourceFile, destFile, operationType);
 			} else {
-				return copy2SingleFolder(sourceFile, destFile);
+				return copy2SingleFolder(sourceFile, destFile, operationType);
 			}
 		} else {
 			return false;
 		}
 	}
 
-	public static boolean copy2Directory(File sourceFile, File destFile) {
+	public static boolean copy2Directory(File sourceFile, File destFile,
+			int operationType) {
 		if (sourceFile == null || destFile == null) {
 			throw new NullPointerException(sourceFile == null ? "sourceFile"
 					: "destFile" + " cannot be null");
@@ -328,19 +288,15 @@ public class FileUtil {
 			throw new NullPointerException("sourceFile does not exist");
 		}
 		File[] sourceFiles = { sourceFile };
-		return move2Directory(sourceFiles, destFile);
+		return copy2Directory(sourceFiles, destFile, operationType);
 	}
 
-	public static boolean copy2Directory(File[] sourceFiles, File destFile) {
+	public static boolean copy2Directory(File[] sourceFiles, File destFile,
+			int operationType) {
 
 		if (sourceFiles == null || destFile == null) {
 			throw new NullPointerException(sourceFiles == null ? "sourceFile"
 					: "destFile" + " cannot be null");
-		}
-
-		if (sourceFiles.length == 0) {
-			// no sourceFiles to be copied
-			return true;
 		}
 
 		for (int i = 0; i < sourceFiles.length; i++) {
@@ -356,7 +312,7 @@ public class FileUtil {
 				File sourceFile = sourceFiles[i];
 				File finalFile = new File(destFile.getAbsolutePath(),
 						sourceFile.getName());
-				if (!copy2File(sourceFile, finalFile)) {
+				if (!copy2File(sourceFile, finalFile, operationType)) {
 					return false;
 				}
 			}
@@ -373,10 +329,21 @@ public class FileUtil {
 	 * @param destFile
 	 * @return
 	 */
-	public static boolean move2File(File sourceFile, File destFile) {
-		if (ensureSourceAndDestFileValid(sourceFile, destFile)) {
+	public static boolean move2File(File sourceFile, File destFile,
+			int operationType) {
+		if (ensureSourceAndDestFileValid(sourceFile, destFile, operationType)) {
 			// 这里不必检查是否sourceFile和destFile是同一个文件，renameTo自然会返回true
-			return sourceFile.renameTo(destFile);
+			// renameTo当存在重名文件时将返回false,所以不可用。
+			// 移动不是复制，所以只要deskFile不存在，直接renameTo即可，不必一个一个递归
+			// TODO
+			if (sourceFile.equals(destFile)) {
+				return true;
+			}
+			if (sourceFile.isFile()) {
+				return move2SingleFile(sourceFile, destFile, operationType);
+			} else {
+				return move2SingleFolder(sourceFile, destFile, operationType);
+			}
 		} else {
 			return false;
 		}
@@ -389,7 +356,8 @@ public class FileUtil {
 	 * @param destFile
 	 * @return
 	 */
-	public static boolean move2Directory(File sourceFile, File destFile) {
+	public static boolean move2Directory(File sourceFile, File destFile,
+			int operationType) {
 		if (sourceFile == null || destFile == null) {
 			throw new NullPointerException(sourceFile == null ? "sourceFile"
 					: "destFile" + " cannot be null");
@@ -398,18 +366,14 @@ public class FileUtil {
 			throw new NullPointerException("sourceFile does not exist");
 		}
 		File[] sourceFiles = { sourceFile };
-		return move2Directory(sourceFiles, destFile);
+		return move2Directory(sourceFiles, destFile, operationType);
 	}
 
-	public static boolean move2Directory(File[] sourceFiles, File destFile) {
+	public static boolean move2Directory(File[] sourceFiles, File destFile,
+			int operationType) {
 		if (sourceFiles == null || destFile == null) {
 			throw new NullPointerException(sourceFiles == null ? "sourceFile"
 					: "destFile" + " cannot be null");
-		}
-
-		if (sourceFiles.length == 0) {
-			// no sourceFiles to be copied
-			return true;
 		}
 
 		for (int i = 0; i < sourceFiles.length; i++) {
@@ -424,7 +388,7 @@ public class FileUtil {
 				File sourceFile = sourceFiles[i];
 				File finalFile = new File(destFile.getAbsolutePath(),
 						sourceFile.getName());
-				if (!move2File(sourceFile, finalFile)) {
+				if (!move2File(sourceFile, finalFile, operationType)) {
 					return false;
 				}
 			}
@@ -679,6 +643,50 @@ public class FileUtil {
 		return suffix;
 	}
 
+	/**
+	 * @param file
+	 * @param includeHiddleFiles
+	 * @param includeFolder
+	 * @return
+	 */
+	private static int getSubfilesNumberInFolder(File file,
+			boolean includeHiddleFiles, boolean includeFolder) {
+		int size = 0;
+		File[] files = file.listFiles();
+		if (files != null) {
+			for (int i = 0; i < files.length; i++) {
+				File file2 = files[i];
+				if (!includeHiddleFiles && file2.isHidden()) {
+					continue;
+				}
+				if (file2.isDirectory()) {
+					size += getSubfilesNumberInFolder(file2,
+							includeHiddleFiles, includeFolder)
+							+ (includeFolder ? 1 : 0);
+				} else {
+					size += 1;
+				}
+			}
+		}
+		return size;
+	}
+
+	private static long getSilgleFolderSize(File file) {
+		long size = 0L;
+		File[] files = file.listFiles();
+		for (int i = 0; i < files.length; i++) {
+			File file2 = files[i];
+			if (file2.isDirectory()) {
+				size += getSilgleFolderSize(file2);
+			} else {
+				size += file2.length();
+			}
+		}
+		// 文件夹占据4k,或者更多，取决于里面文件数量
+		size += file.length();
+		return size;
+	}
+
 	private static boolean deleteFolder(File file) {
 		if (file.isDirectory()) {
 			File[] subFiles = file.listFiles();
@@ -706,16 +714,41 @@ public class FileUtil {
 	}
 
 	/**
-	 * 复制单个文件而不是文件夹。私有静态方法，由copy2File(File sourceFile, File destFile)调用。
-	 * 
-	 * 在调用前就已经确保参数合法，不必检查，sourceFile和destFile也一定不是同一个文件
+	 * 复制单个文件夹而不是文件。私有静态方法，由copy2File(File sourceFile, File destFile)调用。
+	 * 在调用前就已经确保参数合法，不必检查，sourceFile一定存在且是文件夹，sourceFile和destFile也一定不是同一个文件。
+	 * destFile不一定不存在。若存在，有可能是文件也有可能是文件夹
 	 * 
 	 * Folder To Folder
 	 * 
+	 * @param operationType
+	 * 
 	 * @return
 	 */
-	private static boolean copy2SingleFolder(File sourceFile, File destFile) {
-		if (destFile.mkdirs()) {
+	private static boolean copy2SingleFolder(File sourceFile, File destFile,
+			int operationType) {
+		if (destFile.exists()) {
+			switch (operationType) {
+			case Operation_Ski_All:
+				// 不会删除文件，有重名直接跳过
+				return false;
+			case Operation_Merge:
+				// 只合并文件夹，不会删除文件，只有当sourceFile和destFile都是文件夹时才能通过
+				if (destFile.isFile()) {
+					return false;
+				}
+				break;
+			case Operation_Merge_And_Overwrite:
+				// 合并文件夹，删除同名文件。
+				if (destFile.isFile() && !delete(destFile)) {
+					return false;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		// 至此destFile仍然可能存在,如果存在，一定是文件夹 TODO
+		if (destFile.exists() || destFile.mkdirs()) {
 			File[] files = sourceFile.listFiles();
 			if (files != null) {
 				for (int i = 0; i < files.length; i++) {
@@ -723,11 +756,13 @@ public class FileUtil {
 					File destSubFile = new File(destFile.getAbsolutePath(),
 							sourceSubFile.getName());
 					if (sourceSubFile.isDirectory()) {
-						if (!copy2SingleFolder(sourceSubFile, destSubFile)) {
+						if (!copy2SingleFolder(sourceSubFile, destSubFile,
+								operationType)) {
 							return false;
 						}
 					} else {
-						if (!copy2SingleFile(sourceSubFile, destSubFile)) {
+						if (!copy2SingleFile(sourceSubFile, destSubFile,
+								operationType)) {
 							return false;
 						}
 
@@ -740,14 +775,28 @@ public class FileUtil {
 
 	/**
 	 * 复制单个文件而不是文件夹。私有静态方法，由copy2File或者copy2SingleFolder调用。
-	 * 
-	 * 在调用前就已经确保参数合法，不必进行检查,destFile必然有父文件夹，sourceFile和destFile也一定不是同一个文件
+	 * 在调用前就已经确保参数合法，不必进行检查,destFile必然有父文件夹，sourceFile一定存在且是文件，
+	 * sourceFile和destFile也一定不是同一个文件。deskFile有可能存在也有可能不存在。若存在，有可能是文件也有可能是文件夹
 	 * 
 	 * File To File
 	 * 
+	 * @param operationType
+	 * 
 	 * @return
 	 */
-	private static boolean copy2SingleFile(File sourceFile, File destFile) {
+	private static boolean copy2SingleFile(File sourceFile, File destFile,
+			int operationType) {
+		if (destFile.exists()) {
+			if (operationType == Operation_Merge_And_Overwrite) {
+				// 合并文件夹，删除同名文件。只有这种情况才有可能不返回false
+				if (!delete(destFile)) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		// 此处destFile一定不存在
 		boolean copyOK = true;
 		BufferedInputStream inputStream = null;
 		BufferedOutputStream outputStream = null;
@@ -818,6 +867,95 @@ public class FileUtil {
 	}
 
 	/**
+	 * 移动单个文件夹而不是文件。私有静态方法，由move2File(File sourceFile, File destFile)调用。
+	 * 在调用前就已经确保参数合法，不必检查，sourceFile一定存在且是文件夹，sourceFile和destFile也一定不是同一个文件。
+	 * destFile不一定不存在。若存在，有可能是文件也有可能是文件夹
+	 * 
+	 * Folder To Folder
+	 * 
+	 * @param operationType
+	 * 
+	 * @return
+	 */
+	private static boolean move2SingleFolder(File sourceFile, File destFile,
+			int operationType) {
+		if (destFile.exists()) {
+			switch (operationType) {
+			case Operation_Ski_All:
+				// 不会删除文件，有重名直接跳过
+				return false;
+			case Operation_Merge:
+				// 只合并文件夹，不会删除文件，只有当sourceFile和destFile都是文件夹时才能通过
+				if (destFile.isFile()) {
+					return false;
+				}
+				break;
+			case Operation_Merge_And_Overwrite:
+				// 合并文件夹，删除同名文件。
+				if (destFile.isFile() && !delete(destFile)) {
+					return false;
+				}
+				break;
+			default:
+				return false;
+			}
+		}
+		// 至此destFile仍然可能存在,如果存在，一定是文件夹
+		if (destFile.exists()) {
+			// 一级一级向下来，不需要mkdirs
+			File[] files = sourceFile.listFiles();
+			if (files != null) {
+				for (int i = 0; i < files.length; i++) {
+					File sourceSubFile = files[i];
+					File destSubFile = new File(destFile.getAbsolutePath(),
+							sourceSubFile.getName());
+					if (sourceSubFile.isDirectory()) {
+						if (!move2SingleFolder(sourceSubFile, destSubFile,
+								operationType)) {
+							return false;
+						}
+					} else {
+						if (!move2SingleFile(sourceSubFile, destSubFile,
+								operationType)) {
+							return false;
+						}
+					}
+				}
+			}
+		} else {
+			return sourceFile.renameTo(destFile);
+		}
+		return true;
+	}
+
+	/**
+	 * 移动单个文件而不是文件夹。私有静态方法，由move2File或者move2SingleFolder调用。
+	 * 在调用前就已经确保参数合法，不必进行检查,destFile必然有父文件夹，sourceFile一定存在且是文件，
+	 * sourceFile和destFile也一定不是同一个文件。deskFile有可能存在也有可能不存在。若存在，有可能是文件也有可能是文件夹
+	 * 
+	 * File To File
+	 * 
+	 * @param operationType
+	 * 
+	 * @return
+	 */
+	private static boolean move2SingleFile(File sourceFile, File destFile,
+			int operationType) {
+		if (destFile.exists()) {
+			if (operationType == Operation_Merge_And_Overwrite) {
+				// 合并文件夹，删除同名文件。只有这种情况才有可能不返回false
+				if (!delete(destFile)) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		// 此处destFile一定不存在
+		return sourceFile.renameTo(destFile);
+	}
+
+	/**
 	 * 用于确定某个方法中父目录的存在性，确保destFile是个目录，如果不存在，则创建，如果存在但不是目录，则返回false。
 	 * 
 	 * @param destFile
@@ -854,7 +992,7 @@ public class FileUtil {
 	 * @return 若返回true，则：destFile不存在，destFile的父级目录存在，只等复制过去
 	 */
 	private static boolean ensureSourceAndDestFileValid(File sourceFile,
-			File destFile) {
+			File destFile, int operationType) {
 		if (sourceFile == null || destFile == null) {
 			throw new NullPointerException(sourceFile == null ? "sourceFile"
 					: "destFile" + " cannot be null");
@@ -865,9 +1003,27 @@ public class FileUtil {
 		}
 
 		if (destFile.exists()) {
-			// 如果destFile存在，则删除之(文件夹是否应该合并 TODO)
-			if (!delete(destFile)) {
+			switch (operationType) {
+			case Operation_Ski_All:
+				// 不会删除文件，有重名直接跳过
 				return false;
+			case Operation_Merge:
+				// 只合并文件夹，不会删除文件，只有当sourceFile和destFile都是文件夹时才能通过
+				if (sourceFile.isFile() || destFile.isFile()) {
+					return false;
+				}
+				break;
+			case Operation_Merge_And_Overwrite:
+				// 合并文件夹，删除同名文件。
+				if (sourceFile.isFile() || destFile.isFile()) {
+					if (!delete(destFile)) {
+						return false;
+					}
+				}
+				break;
+
+			default:
+				break;
 			}
 		}
 
