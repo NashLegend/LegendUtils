@@ -89,9 +89,8 @@ public class FileUtil {
 			"pptx", "xsl", "xslx" };
 
 	// 写文件模式,可组合使用
-	public static final int Operation_Overwrite = 0x1;// 如有重名覆盖文件/文件夹
-	public static final int Operation_Merge = 0x2;// 合并文件夹
-	public static final int Operation_Skip = 0x4;// 如有同名文件，则跳过
+	public static final int Operation_Overwrite = 0x1;// 重名文件覆盖
+	public static final int Operation_Merge = 0x2;// 重名文件夹合并
 
 	interface FileOperationListener {
 
