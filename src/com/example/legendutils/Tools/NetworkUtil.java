@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.telephony.TelephonyManager;
 
 public class NetworkUtil {
 
@@ -72,6 +73,21 @@ public class NetworkUtil {
 	}
 
 	/**
+	 * 获取运营商信息
+	 */
+	public static String getOperator(Context context) {
+		String operator = "-1";
+		try {
+			TelephonyManager telMgr = (TelephonyManager) context
+					.getSystemService(Context.TELEPHONY_SERVICE);
+			operator = telMgr.getNetworkOperatorName();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return operator;
+	}
+
+	/**
 	 * 打开网络连接设置界面
 	 * 
 	 * @param context
@@ -80,5 +96,4 @@ public class NetworkUtil {
 		context.startActivity(new Intent(
 				android.provider.Settings.ACTION_WIRELESS_SETTINGS));
 	}
-
 }
