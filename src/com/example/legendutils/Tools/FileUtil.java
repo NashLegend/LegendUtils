@@ -448,7 +448,9 @@ public class FileUtil {
 			thumb = getVideoFileThumbnail(file, 96, 96);
 			break;
 		case FILE_TYPE_SOUND:// 获取音乐文件缩略图，
-
+			if (getFileSuffix(file).toLowerCase().equals("mp3")) {
+				thumb = getMP3Thumbnail(file);
+			}
 			break;
 		case FILE_TYPE_APK:// 获取apk文件缩略图
 			thumb = getApkIcon(context, file.getAbsolutePath());
@@ -480,7 +482,10 @@ public class FileUtil {
 			thumb = getVideoFileThumbnail(file, width, height);
 			break;
 		case FILE_TYPE_SOUND:// 获取音乐文件缩略图，
-
+			if (getFileSuffix(file).toLowerCase().equals("mp3")) {
+				Bitmap tmp = getMP3Thumbnail(file);
+				thumb = ThumbnailUtils.extractThumbnail(tmp, width, height);
+			}
 			break;
 		case FILE_TYPE_APK:// 获取apk文件按指定尺寸缩放过的缩略图，
 			thumb = getApkResizedIcon(context, file.getAbsolutePath(), width,
@@ -556,6 +561,140 @@ public class FileUtil {
 		}
 
 		return thumb;
+	}
+
+	/**
+	 * http://blog.csdn.net/toni001/article/details/6724785
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public static Bitmap getMP3Thumbnail(File file) {
+		int buffSize = 204800;//
+		FileInputStream mp3ips = null;
+		Bitmap bitmap = null;
+		try {
+			mp3ips = new FileInputStream(file);
+			if (buffSize > mp3ips.available()) {
+				buffSize = mp3ips.available();
+			}
+			byte[] buff = new byte[buffSize];
+			mp3ips.read(buff, 0, buffSize);
+			if (indexOf("ID3".getBytes(), buff, 1, 512) == -1) {
+				// No ID3V2
+				return null;
+			}
+			if (indexOf("APIC".getBytes(), buff, 1, 512) != -1) {
+				int searLen = indexOf(new byte[] { (byte) 0xFF, (byte) 0xFB },
+						buff);
+				int imgStart = indexOf(new byte[] { (byte) 0xFF, (byte) 0xD8 },
+						buff);
+				int imgEnd = lastIndexOf(
+						new byte[] { (byte) 0xFF, (byte) 0xD9 }, buff, 1,
+						searLen) + 2;
+				byte[] imgb = cutBytes(imgStart, imgEnd, buff);
+				bitmap = BitmapFactory.decodeByteArray(imgb, 0, imgb.length);
+			} else {
+				// No APIC
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (mp3ips != null) {
+				try {
+					mp3ips.close();
+				} catch (Exception e2) {
+				}
+			}
+		}
+
+		return bitmap;
+	}
+
+	/**
+	 * 正向索引
+	 * */
+	public static int indexOf(byte[] tag, byte[] src) {
+		return indexOf(tag, src, 1, src.length);
+	}
+
+	/**
+	 * 获取第index个的位置<br />
+	 * index从1开始
+	 * 
+	 * */
+	private static int indexOf(byte[] tag, byte[] src, int index, int len) {
+		if (len > src.length) {
+			try {
+				throw new Exception("大于总个数");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		int tagLen = tag.length;
+		byte[] tmp = new byte[tagLen];
+		for (int j = 0; j < len - tagLen + 1; j++) {
+			for (int i = 0; i < tagLen; i++) {
+				tmp[i] = src[j + i];
+			}
+			// 判断是否相等
+			for (int i = 0; i < tagLen; i++) {
+				if (tmp[i] != tag[i])
+					break;
+				if (i == tagLen - 1) {
+					return j;
+				}
+			}
+
+		}
+		return -1;
+	}
+
+	/**
+	 * 倒序获取第index个的位置<br />
+	 * index从1开始
+	 * */
+	private static int lastIndexOf(byte[] tag, byte[] src, int index, int len) {
+		if (len > src.length) {
+			try {
+				throw new Exception("大于总个数");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		int size = 0;
+		int tagLen = tag.length;
+		byte[] tmp = new byte[tagLen];
+		for (int j = len - tagLen; j >= 0; j--) {
+			for (int i = 0; i < tagLen; i++) {
+				tmp[i] = src[j + i];
+
+			}
+			for (int i = 0; i < tagLen; i++) {
+				if (tmp[i] != tag[i])
+					break;
+				if (i == tagLen - 1) {
+					size++;
+					return j;
+				}
+			}
+
+		}
+		return -1;
+	}
+
+	/**
+	 * 截取byte[]
+	 * */
+	private static byte[] cutBytes(int start, int end, byte[] src) {
+		if (end <= start || start < 0 || end > src.length) {
+			return null;
+		}
+		byte[] tmp = new byte[end - start];
+		for (int i = 0; i < end - start; i++) {
+			tmp[i] = src[start + i];
+		}
+		return tmp;
 	}
 
 	/**
