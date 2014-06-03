@@ -4,18 +4,26 @@ public class RegExpUtil {
 
 	public static final String IPV4RegExp = "((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)";
 	public static final String PhoneRegExp = "\\(0\\d{2}\\)[- ]?\\d{8}|0\\d{2}[- ]?\\d{8}|\\(0\\d{3}\\)[- ]?\\d{7}|0\\d{3}[- ]?\\d{7}";
-	public static final String NetPictureRegExp = "http://([\\w-]+\\.)+\\w{2,3}(:\\d{1,5})?(/[\\w-]+)+\\.(jpg|bmp|png|gif)";
+	public static final String NetPictureRegExp = "http://([\\w-]+\\.)+\\w{2,3}(:\\d{1,5})?(/[\\w-]+)+\\.(?i)(jpg|bmp|png|gif)";
 
 	/**
 	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num小的正整数的字符串.
-	 * 如kk512it匹配regLessThanInt(513),但是5123不会,kk513it也不会
+	 * 如kk512it匹配regLessThanInt(513),kk513it不会.
+	 * 如果include为true。则只要包含num就可以，5123匹配regLessThanInt(513)，因为5123包含512
 	 * 
 	 * @param num
 	 * @return
 	 */
-	public static String regLessThanInt(int num) {
+	public static String regLessThanInt(int num, boolean include) {
 		String front = "(?<=\\D|\\b)(";
 		String back = ")(?=\\D|\\b)";
+		if (include) {
+			front = "(";
+			back = ")";
+		} else {
+			front = "(?<=\\D|\\b)(";
+			back = ")(?=\\D|\\b)";
+		}
 		int cou = String.valueOf(num).length();
 		String reg = "";
 
@@ -63,14 +71,22 @@ public class RegExpUtil {
 
 	/**
 	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num大的正整数的字符串.
-	 * 如kk512it匹配regLessThanInt(511),但是5123不会,kk511it也不会
+	 * 如kk512it匹配regLessThanInt(511),kk511it不会
+	 * 如果include为true。则只要包含num就可以。貌似不必加……
 	 * 
 	 * @param num
 	 * @return
 	 */
-	public static String regLargerThanInt(int num) {
+	public static String regLargerThanInt(int num, boolean include) {
 		String front = "(?<=\\D|\\b)(";
 		String back = ")(?=\\D|\\b)";
+		if (include) {
+			front = "(";
+			back = ")";
+		} else {
+			front = "(?<=\\D|\\b)(";
+			back = ")(?=\\D|\\b)";
+		}
 		int cou = String.valueOf(num).length();
 		String reg = "";
 		String longer = "\\d{" + (cou + 1) + ",}";// 更高位 TODO 前面是0的情况
