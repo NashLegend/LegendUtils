@@ -89,7 +89,9 @@ public class RegExpUtil {
 		}
 		int cou = String.valueOf(num).length();
 		String reg = "";
-		String longer = "[1-9]\\d{" + cou + ",}";
+		// 如果不加"0*"，那么前面有0的情况在include这false的情况下无法匹配
+		// 除非front = "(?<=\\D|\\b|0)(";
+		String longer = "0*[1-9]\\d{" + cou + ",}";
 		reg += longer + "|";
 
 		if (cou > 1) {
