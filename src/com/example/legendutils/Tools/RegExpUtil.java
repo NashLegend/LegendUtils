@@ -89,7 +89,7 @@ public class RegExpUtil {
 		}
 		int cou = String.valueOf(num).length();
 		String reg = "";
-		String longer = "\\d{" + (cou + 1) + ",}";// 更高位 TODO 前面是0的情况
+		String longer = "[1-9]\\d{" + cou + ",}";
 		reg += longer + "|";
 
 		if (cou > 1) {
