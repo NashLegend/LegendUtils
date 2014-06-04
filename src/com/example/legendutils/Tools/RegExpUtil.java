@@ -2,26 +2,41 @@ package com.example.legendutils.Tools;
 
 public class RegExpUtil {
 
+	/**
+	 * 匹配IPV4地址
+	 */
 	public static final String IPV4RegExp = "((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)";
+	/**
+	 * 匹配座机号
+	 */
 	public static final String PhoneRegExp = "\\(0\\d{2}\\)[- ]?\\d{8}|0\\d{2}[- ]?\\d{8}|\\(0\\d{3}\\)[- ]?\\d{7}|0\\d{3}[- ]?\\d{7}";
-	public static final String NetPictureRegExp = "http://([\\w-]+\\.)+\\w{2,3}(:\\d{1,5})?(/[\\w-]+)+\\.(?i)(jpg|bmp|png|gif)";
+	/**
+	 * 匹配网络图片地址
+	 */
+	public static final String NetPictureRegExp = "http://((([A-Za-z0-9][A-Za-z0-9-]*\\.)+[A-Za-z]{2,})|(((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)))(:\\d{1,5})?(/[\\w-]+)+\\.(?i)(jpg|bmp|png|gif)";
+	/**
+	 * 电子邮件匹配正则表达式
+	 */
+	public static final String EmailRegExp = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
 	/**
 	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num小的正整数的字符串.
 	 * 如kk512it匹配regLessThanInt(513),kk513it不会.
 	 * 如果include为true。则只要包含num就可以，5123匹配regLessThanInt(513)，因为5123包含512
+	 * 如果为true，0000777匹配regLessThanInt(1000, true)，结果将是000,077,7。
+	 * 如果为false，0000777匹配regLessThanInt(1000, false)，结果将是777。
 	 * 
 	 * @param num
 	 * @return
 	 */
 	public static String regLessThanInt(int num, boolean include) {
-		String front = "(?<=\\D|\\b)(";
-		String back = ")(?=\\D|\\b)";
+		String front = "";
+		String back = "";
 		if (include) {
 			front = "(";
 			back = ")";
 		} else {
-			front = "(?<=\\D|\\b)(";
+			front = "(?<=\\D|\\b|0)(";
 			back = ")(?=\\D|\\b)";
 		}
 		int cou = String.valueOf(num).length();
@@ -57,8 +72,9 @@ public class RegExpUtil {
 			}
 			String low = null;
 			if (cou > 2) {
-				low = "\\d{1," + (cou - 1) + "}";
+				low = "[1-9]\\d{0," + (cou - 2) + "}|0";// [1-9]xx或者0
 			} else {
+				// 一位允许0开头
 				low = "\\d";
 			}
 			reg += low;
@@ -71,27 +87,25 @@ public class RegExpUtil {
 
 	/**
 	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num大的正整数的字符串.
-	 * 如kk512it匹配regLessThanInt(511),kk511it不会
+	 * 如kk512it匹配regLessThanInt(511),kk511it不会. 不会匹配数字前面的0，007只会匹配7
 	 * 如果include为true。则只要包含num就可以。貌似不必加……
 	 * 
 	 * @param num
 	 * @return
 	 */
 	public static String regLargerThanInt(int num, boolean include) {
-		String front = "(?<=\\D|\\b)(";
-		String back = ")(?=\\D|\\b)";
+		String front = "";
+		String back = "";
 		if (include) {
 			front = "(";
 			back = ")";
 		} else {
-			front = "(?<=\\D|\\b)(";
+			front = "(?<=\\D|\\b|0)(";
 			back = ")(?=\\D|\\b)";
 		}
 		int cou = String.valueOf(num).length();
 		String reg = "";
-		// 如果不加"0*"，那么前面有0的情况在include这false的情况下无法匹配
-		// 除非front = "(?<=\\D|\\b|0)(";
-		String longer = "0*[1-9]\\d{" + cou + ",}";
+		String longer = "[1-9]\\d{" + cou + ",}";
 		reg += longer + "|";
 
 		if (cou > 1) {
@@ -134,6 +148,47 @@ public class RegExpUtil {
 			reg = reg.substring(0, reg.length() - 1);
 		}
 		reg = front + reg + back;
+		return reg;
+	}
+
+	/**
+	 * 生成密码匹配正则
+	 * 
+	 * @param min
+	 *            密码最低长度
+	 * @param max
+	 *            密码最高长度
+	 * @param requireLowerCase
+	 *            是否必须有小写
+	 * @param requireHigherCase
+	 *            是否必须有大写
+	 * @param requireNumber
+	 *            是否必须有数字
+	 * @param requireSpecialChara
+	 *            是否必须有特殊字符（@#$%._-）
+	 * @return 密码正则表达式
+	 */
+	public static String regPassword(int min, int max,
+			boolean requireLowerCase, boolean requireHigherCase,
+			boolean requireNumber, boolean requireSpecialChara) {
+		String low = "(?=.*[a-z])";
+		String high = "(?=.*[A-Z])";
+		String num = "(?=.*\\d)";
+		String spe = "(?=.*[@#$%._-])";
+		String reg = "^(";
+		if (requireLowerCase) {
+			reg += low;
+		}
+		if (requireHigherCase) {
+			reg += high;
+		}
+		if (requireNumber) {
+			reg += num;
+		}
+		if (requireSpecialChara) {
+			reg += spe;
+		}
+		reg += ".{" + min + "," + max + "})$";
 		return reg;
 	}
 }
