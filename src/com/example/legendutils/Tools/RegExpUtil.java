@@ -20,13 +20,27 @@ public class RegExpUtil {
 	public static final String EmailRegExp = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
 	/**
+	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num大的正整数的字符串。
+	 * 匹配时将匹配完全数字字符串，不会将一个长的数字字符串分开匹配，而是当作一个数字，前面的0会被忽略
+	 * 
+	 * @param num
+	 * @return
+	 */
+	public static String regLessThanInt(int num) {
+		return regLargerThanInt(num, false);
+	}
+
+	/**
 	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num小的正整数的字符串.
 	 * 如kk512it匹配regLessThanInt(513),kk513it不会.
 	 * 如果include为true。则只要包含num就可以，5123匹配regLessThanInt(513)，因为5123包含512
-	 * 如果为true，0000777匹配regLessThanInt(1000, true)，结果将是000,077,7。
-	 * 如果为false，0000777匹配regLessThanInt(1000, false)，结果将是777。
+	 * 如果为true，前面的0不会被忽略，0000777匹配regLessThanInt(1000, true)，结果将是0,0,0,0,777。
+	 * 如果为false，前面的0会被忽略，0000777匹配regLessThanInt(1000, false)，结果将是777。00007结果将是7
 	 * 
 	 * @param num
+	 *            要比较的数字
+	 * @param include
+	 *            一般不需要
 	 * @return
 	 */
 	public static String regLessThanInt(int num, boolean include) {
@@ -86,11 +100,25 @@ public class RegExpUtil {
 	}
 
 	/**
+	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num大的正整数的字符串。
+	 * 匹配时将匹配完全数字字符串，不会将一个长的数字字符串分开匹配，而是当作一个数字
+	 * 
+	 * @param num
+	 * @return
+	 */
+	public static String regLargerThanInt(int num) {
+		return regLargerThanInt(num, false);
+	}
+
+	/**
 	 * 生成比较数字的正则表达式,该正则表达式匹配包含有比num大的正整数的字符串.
 	 * 如kk512it匹配regLessThanInt(511),kk511it不会. 不会匹配数字前面的0，007只会匹配7
 	 * 如果include为true。则只要包含num就可以。貌似不必加……
 	 * 
 	 * @param num
+	 *            要比较的数字
+	 * @param include
+	 *            一般为false
 	 * @return
 	 */
 	public static String regLargerThanInt(int num, boolean include) {
