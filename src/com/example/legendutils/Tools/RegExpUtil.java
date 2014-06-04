@@ -11,7 +11,7 @@ public class RegExpUtil {
 	 */
 	public static final String PhoneRegExp = "\\(0\\d{2}\\)[- ]?\\d{8}|0\\d{2}[- ]?\\d{8}|\\(0\\d{3}\\)[- ]?\\d{7}|0\\d{3}[- ]?\\d{7}";
 	/**
-	 * 匹配网络图片地址
+	 * 匹配网络图片地址，未考虑url中的\w-以外的字符
 	 */
 	public static final String NetPictureRegExp = "http://((([A-Za-z0-9][A-Za-z0-9-]*\\.)+[A-Za-z]{2,})|(((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)))(:\\d{1,5})?(/[\\w-]+)+\\.(?i)(jpg|bmp|png|gif)";
 	/**
