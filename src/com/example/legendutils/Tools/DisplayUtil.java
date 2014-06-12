@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Window;
+import android.view.WindowManager;
 
 public class DisplayUtil {
 
@@ -18,9 +19,11 @@ public class DisplayUtil {
 	 * @param activity
 	 * @return
 	 */
-	public static int getScreenHeight(Activity activity) {
+	public static int getScreenHeight(Context context) {
 		DisplayMetrics metrics = new DisplayMetrics();
-		activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		WindowManager manager = (WindowManager) context
+				.getSystemService(Context.WINDOW_SERVICE);
+		manager.getDefaultDisplay().getMetrics(metrics);
 		return metrics.heightPixels;
 	}
 
@@ -30,9 +33,11 @@ public class DisplayUtil {
 	 * @param activity
 	 * @return
 	 */
-	public static int getScreenWidth(Activity activity) {
+	public static int getScreenWidth(Context context) {
 		DisplayMetrics metrics = new DisplayMetrics();
-		activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		WindowManager manager = (WindowManager) context
+				.getSystemService(Context.WINDOW_SERVICE);
+		manager.getDefaultDisplay().getMetrics(metrics);
 		return metrics.widthPixels;
 	}
 
@@ -55,14 +60,14 @@ public class DisplayUtil {
 		return activity.getWindow().findViewById(Window.ID_ANDROID_CONTENT)
 				.getHeight();
 	}
-	
+
 	/**
 	 * 返回程序window高度，不包括通知栏
 	 * 
 	 * @return
 	 */
 	public static int getWindowHeight(Activity activity) {
-		return getScreenHeight(activity)-getStatusBarHeight(activity);
+		return getScreenHeight(activity) - getStatusBarHeight(activity);
 	}
 
 	/**
