@@ -10,6 +10,9 @@ package com.example.legendutils;
 public final class R {
     public static final class attr {
     }
+    public static final class color {
+        public static int transparent=0x7f040000;
+    }
     public static final class drawable {
         public static int back_button=0x7f020000;
         public static int format_apk=0x7f020001;
@@ -34,20 +37,20 @@ public final class R {
         public static int ic_launcher=0x7f020014;
     }
     public static final class id {
-        public static int button_OK=0x7f060009;
-        public static int button_dialog_file_cancel=0x7f060006;
-        public static int button_dialog_file_ok=0x7f060007;
-        public static int checkbox_dialog_file_all=0x7f060003;
-        public static int checkbox_file_item_select=0x7f06000d;
-        public static int edittext_dialog_file_path=0x7f060002;
-        public static int image_file_icon=0x7f06000b;
-        public static int imagebutton_dialog_file_back=0x7f060001;
-        public static int layout_dialog_file_footer=0x7f060005;
-        public static int layout_dialog_file_header=0x7f060000;
-        public static int listview_dialog_file=0x7f060004;
-        public static int picker=0x7f060008;
-        public static int rootFileItemView=0x7f06000a;
-        public static int text_file_title=0x7f06000c;
+        public static int button_OK=0x7f070009;
+        public static int button_dialog_file_cancel=0x7f070006;
+        public static int button_dialog_file_ok=0x7f070007;
+        public static int checkbox_dialog_file_all=0x7f070003;
+        public static int checkbox_file_item_select=0x7f07000d;
+        public static int edittext_dialog_file_path=0x7f070002;
+        public static int image_file_icon=0x7f07000b;
+        public static int imagebutton_dialog_file_back=0x7f070001;
+        public static int layout_dialog_file_footer=0x7f070005;
+        public static int layout_dialog_file_header=0x7f070000;
+        public static int listview_dialog_file=0x7f070004;
+        public static int picker=0x7f070008;
+        public static int rootFileItemView=0x7f07000a;
+        public static int text_file_title=0x7f07000c;
     }
     public static final class layout {
         public static int dialog_file=0x7f030000;
@@ -55,23 +58,29 @@ public final class R {
         public static int view_file_item=0x7f030002;
     }
     public static final class string {
-        public static int app_name=0x7f040000;
-        public static int back=0x7f040005;
-        public static int cancel=0x7f040003;
-        public static int file_opener=0x7f040002;
-        public static int number_picker=0x7f040001;
-        public static int ok=0x7f040004;
+        public static int app_name=0x7f050000;
+        public static int back=0x7f050005;
+        public static int cancel=0x7f050003;
+        public static int file_opener=0x7f050002;
+        public static int number_picker=0x7f050001;
+        public static int ok=0x7f050004;
     }
     public static final class style {
         /** 
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
 
+
+
+
     
 
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
             backward-compatibility can go here.
+
+
+
 
         
 
@@ -86,11 +95,12 @@ public final class R {
     
  API 14 theme customizations can go here. 
          */
-        public static int AppBaseTheme=0x7f050000;
+        public static int AppBaseTheme=0x7f060000;
         /**  Application theme. 
  All customizations that are NOT specific to a particular API-level can go here. 
          */
-        public static int AppTheme=0x7f050001;
-        public static int Dialog=0x7f050002;
+        public static int AppTheme=0x7f060001;
+        public static int Dialog=0x7f060002;
+        public static int WPDialog=0x7f060003;
     }
 }

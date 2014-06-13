@@ -73,7 +73,7 @@ public class NumberPickerDialog extends Dialog {
 			LayoutInflater inflater = (LayoutInflater) context
 					.getSystemService(Service.LAYOUT_INFLATER_SERVICE);
 			View layout = inflater.inflate(R.layout.dialog_number_picker, null);
-			dialog.addContentView(layout, new LayoutParams(
+			dialog.setContentView(layout, new LayoutParams(
 					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 			picker = (NumberPicker) layout.findViewById(R.id.picker);
 			picker.setMaxValue(max);
@@ -92,7 +92,6 @@ public class NumberPickerDialog extends Dialog {
 					}
 				}
 			});
-			dialog.setContentView(layout);
 			return dialog;
 		}
 	}

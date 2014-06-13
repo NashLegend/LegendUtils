@@ -113,7 +113,7 @@ public class FileDialog extends Dialog {
 			dialogView.setInitialPath(initialPath);
 			dialogView.openFolder();
 			dialog.setTitle(title);
-			dialog.addContentView(dialogView, new LayoutParams(
+			dialog.setContentView(dialogView, new LayoutParams(
 					LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 			if (width > 0 && height > 0) {
 				dialog.getWindow().setLayout(width, height);
