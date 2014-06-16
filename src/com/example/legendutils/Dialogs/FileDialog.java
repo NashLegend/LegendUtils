@@ -131,8 +131,8 @@ public class FileDialog extends Dialog {
                     if (fileSelectListener != null) {
                         fileSelectListener.onFileSelected(dialogView
                                 .getSelectedFiles());
-                        dialog.dismiss();
                     }
+                    dialog.dismiss();
                 }
             });
             cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -142,8 +142,8 @@ public class FileDialog extends Dialog {
                     // TODO 自动生成的方法存根
                     if (fileSelectListener != null) {
                         fileSelectListener.onFileCanceled();
-                        dialog.dismiss();
                     }
+                    dialog.dismiss();
                 }
             });
             return dialog;
