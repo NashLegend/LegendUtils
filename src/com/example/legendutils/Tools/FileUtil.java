@@ -36,7 +36,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Thread-safe? 复制、移动、删除、压缩、解压、抽取缩略图、取得文件类型、文件/文件夹大小计算、文件夹子文件数量计算、
+ * TODO 。
+ * 文件处理时要对路径做统一处理，/sdcard/下的文件移动到/storage/emulated/0/xx/下会失败，但是移动到/sdcard/xx/
+ * 下会成功。 Thread-safe? 复制、移动、删除、压缩、解压、抽取缩略图、取得文件类型、文件/文件夹大小计算、文件夹子文件数量计算、
  * 
  * @author NashLegend
  */
@@ -167,6 +169,13 @@ public class FileUtil {
     }
 
     private static final int BUFFER = 8192;
+
+    /**
+     * 将传入的file路径改为统一路径。比如storage/emulated/0\legacy等等，TODO
+     */
+    public static void trimPath(File file) {
+
+    }
 
     /**
      * @param sourceFile
@@ -597,11 +606,13 @@ public class FileUtil {
                 File finalFile = new File(destFile.getAbsolutePath(),
                         sourceFile.getName());
                 if (!move2File(sourceFile, finalFile, operationType)) {
+                    Log.i("file", "fail");
                     return false;
                 }
             }
             return true;
         } else {
+            Log.i("file", "Oops");
             return false;
         }
     }
@@ -1447,7 +1458,8 @@ public class FileUtil {
             }
         }
         // 此处destFile一定不存在
-        return sourceFile.renameTo(destFile);
+        boolean flag = sourceFile.renameTo(destFile);
+        return flag;
     }
 
     /**
