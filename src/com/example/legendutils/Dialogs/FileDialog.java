@@ -74,10 +74,22 @@ public class FileDialog extends Dialog {
         private FileDialogListener fileSelectListener;
         private FileDialogView dialogView;
         private Context context;
+        private boolean canceledOnTouchOutside = true;
+        private boolean cancelable = true;
         private String title = "选择文件";
 
         public Builder(Context context) {
             this.context = context;
+        }
+
+        public Builder setCanceledOnTouchOutside(boolean flag) {
+            canceledOnTouchOutside = flag;
+            return this;
+        }
+
+        public Builder setCancelable(boolean flag) {
+            cancelable = flag;
+            return this;
         }
 
         public Builder setFileMode(int fileMode) {
@@ -114,6 +126,8 @@ public class FileDialog extends Dialog {
             dialogView.setInitialPath(initialPath);
             dialogView.openFolder();
             dialog.setTitle(title);
+            dialog.setCancelable(cancelable);
+            dialog.setCanceledOnTouchOutside(canceledOnTouchOutside);
             dialog.setContentView(dialogView, new LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
             if (width > 0 && height > 0) {

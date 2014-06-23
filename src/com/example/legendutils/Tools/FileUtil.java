@@ -30,7 +30,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore.Video.Thumbnails;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -154,7 +156,7 @@ public class FileUtil {
     public static final int Operation_Merge = 0x1;// 只合并文件夹并不替换文件，意味着不删除任何文件
     public static final int Operation_Merge_And_Overwrite = 0x2;// 合并文件夹并替换文件
 
-    interface FileOperationListener {
+    public static interface FileOperationListener {
 
         public void onComplete();
 
@@ -340,6 +342,35 @@ public class FileUtil {
         }
     }
 
+    public static Runnable copy2FileAsync(final File sourceFile, final File destFile,
+            final FileOperationListener listener) {
+
+        class CopyTask extends AsyncTask<String, Integer, Boolean> {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return copy2File(sourceFile, destFile, FileUtil.Operation_Merge_And_Overwrite);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
+
+        CopyTask task = new CopyTask();
+        task.execute("");
+
+        return null;
+    }
+
     public static boolean copy2Directory(File sourceFile, File destFile,
             int operationType) {
         if (sourceFile == null || destFile == null) {
@@ -353,6 +384,34 @@ public class FileUtil {
                 sourceFile
         };
         return copy2Directory(sourceFiles, destFile, operationType);
+    }
+
+    public static Runnable copy2DirectoryAsync(final File sourceFile, final File destFile,
+            final FileOperationListener listener) {
+        class CopyTask extends AsyncTask<String, Integer, Boolean> {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return copy2Directory(sourceFile, destFile, FileUtil.Operation_Merge_And_Overwrite);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
+
+        CopyTask task = new CopyTask();
+        task.execute("");
+
+        return null;
     }
 
     public static boolean copy2Directory(File[] sourceFiles, File destFile,
@@ -386,6 +445,33 @@ public class FileUtil {
         }
     }
 
+    public static Runnable copy2DirectoryAsync(final File[] sourceFiles, final File destFile,
+            final FileOperationListener listener) {
+        class CopyTask extends AsyncTask<String, Integer, Boolean> {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return copy2Directory(sourceFiles, destFile, FileUtil.Operation_Merge_And_Overwrite);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
+
+        CopyTask task = new CopyTask();
+        task.execute("");
+        return null;
+    }
+
     /**
      * 将sourceFile文件移动成为destFile
      * 
@@ -413,6 +499,34 @@ public class FileUtil {
         }
     }
 
+    public static Runnable move2FileAsync(final File sourceFile, final File destFile,
+            final FileOperationListener listener) {
+        class MoveTask extends AsyncTask<String, Integer, Boolean> {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return move2File(sourceFile, destFile, FileUtil.Operation_Merge_And_Overwrite);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
+
+        MoveTask task = new MoveTask();
+        task.execute("");
+
+        return null;
+    }
+
     /**
      * 将文件转移到某个目录，文件名不变
      * 
@@ -433,6 +547,34 @@ public class FileUtil {
                 sourceFile
         };
         return move2Directory(sourceFiles, destFile, operationType);
+    }
+
+    public static Runnable move2DirectoryAsync(final File sourceFile, final File destFile,
+            final FileOperationListener listener) {
+        class MoveTask extends AsyncTask<String, Integer, Boolean> {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return move2Directory(sourceFile, destFile, FileUtil.Operation_Merge_And_Overwrite);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
+
+        MoveTask task = new MoveTask();
+        task.execute("");
+
+        return null;
     }
 
     public static boolean move2Directory(File[] sourceFiles, File destFile,
@@ -464,6 +606,73 @@ public class FileUtil {
         }
     }
 
+    public static Runnable move2DirectoryAsync(final File[] sourceFiles, final File destFile,
+            final FileOperationListener listener) {
+        class MoveTask extends AsyncTask<String, Integer, Boolean> {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return move2Directory(sourceFiles, destFile, FileUtil.Operation_Merge_And_Overwrite);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
+
+        MoveTask task = new MoveTask();
+        task.execute("");
+        return null;
+    }
+
+    public static boolean delete(File[] files) {
+        if (files.length > 0) {
+            for (int j = 0; j < files.length; j++) {
+                File file = files[j];
+                if (!delete(file)) {
+                    return false;
+                }
+            }
+        } else {
+
+        }
+        return true;
+    }
+
+    public static Runnable deleteAsync(final File[] files, final FileOperationListener listener) {
+        class DeleteTask extends AsyncTask<String, Integer, Boolean> {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return delete(files);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
+
+        DeleteTask task = new DeleteTask();
+        task.execute("");
+        return null;
+    }
+
     public static boolean delete(File file) {
         if (file == null) {
             throw new NullPointerException("file is null");
@@ -472,28 +681,31 @@ public class FileUtil {
             return deleteFolder(file);
         }
         return file.delete();
-
     }
 
-    // 异步操作
+    public static Runnable deleteAsync(final File file, final FileOperationListener listener) {
+        class DeleteTask extends AsyncTask<String, Integer, Boolean> {
 
-    public static Runnable copy2FileAsync(File sourceFile, File destFile) {
-        return null;
-    }
+            @Override
+            protected Boolean doInBackground(String... params) {
+                return delete(file);
+            }
 
-    public static Runnable copy2DirectoryAsync(File sourceFile, File destFile) {
-        return null;
-    }
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (listener != null) {
+                    if (result) {
+                        listener.onComplete();
+                    } else {
+                        listener.onError();
+                    }
+                }
+            }
+        }
 
-    public static Runnable move2FileAsync(File sourceFile, File destFile) {
-        return null;
-    }
-
-    public static Runnable move2DirectoryAsync(File sourceFile, File destFile) {
-        return null;
-    }
-
-    public static Runnable deleteAsync(File file) {
+        DeleteTask task = new DeleteTask();
+        task.execute("");
         return null;
     }
 
