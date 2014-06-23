@@ -1,4 +1,4 @@
-package com.example.legendutils.BuildInViews;
+package com.example.legendutils.BuildIn;
 
 import java.util.ArrayList;
 

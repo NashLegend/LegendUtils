@@ -4,7 +4,7 @@ package com.example.legendutils.Dialogs;
 import java.io.File;
 import java.util.ArrayList;
 
-import com.example.legendutils.BuildInViews.FileDialogView;
+import com.example.legendutils.BuildIn.FileDialogView;
 import com.example.legendutils.Tools.DisplayUtil;
 import com.example.legendutils.R;
 

@@ -1,7 +1,7 @@
 package com.example.legendutils.Dialogs;
 
 import com.example.legendutils.R;
-import com.example.legendutils.BuildInViews.WPLoading;
+import com.example.legendutils.BuildIn.WPLoading;
 
 import android.app.Dialog;
 import android.content.Context;

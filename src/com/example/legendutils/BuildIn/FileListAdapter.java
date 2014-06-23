@@ -1,13 +1,10 @@
-package com.example.legendutils.BuildInAdapters;
+package com.example.legendutils.BuildIn;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import com.example.legendutils.BuildInVO.FileItem;
-import com.example.legendutils.BuildInViews.FileDialogView;
-import com.example.legendutils.BuildInViews.FileItemView;
 import com.example.legendutils.Dialogs.FileDialog;
 import android.annotation.SuppressLint;
 import android.content.Context;

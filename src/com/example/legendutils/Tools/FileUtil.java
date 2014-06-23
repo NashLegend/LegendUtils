@@ -514,7 +514,7 @@ public class FileUtil {
                 thumb = getVideoFileThumbnail(file, 96, 96);
                 break;
             case FILE_TYPE_AUDIO:// 获取音乐文件缩略图，
-                if (getFileSuffix(file).toLowerCase().equals("mp3")) {
+                if (getFileSuffix(file).equals("mp3")) {
                     thumb = getMP3Thumbnail(file);
                 }
                 break;
@@ -548,7 +548,7 @@ public class FileUtil {
                 thumb = getVideoFileThumbnail(file, width, height);
                 break;
             case FILE_TYPE_AUDIO:// 获取音乐文件缩略图，
-                if (getFileSuffix(file).toLowerCase().equals("mp3")) {
+                if (getFileSuffix(file).equals("mp3")) {
                     Bitmap tmp = getMP3Thumbnail(file);
                     thumb = ThumbnailUtils.extractThumbnail(tmp, width, height);
                 }
@@ -886,7 +886,7 @@ public class FileUtil {
         if (file.isDirectory()) {
             return FILE_TYPE_FOLDER;
         } else {
-            String suffix = getFileSuffix(file).toLowerCase();
+            String suffix = getFileSuffix(file);
             if (isArrayContains(apkSuffixArray, suffix)) {
                 return FILE_TYPE_APK;
             } else if (isArrayContains(imageSuffixArray, suffix)) {
@@ -933,7 +933,7 @@ public class FileUtil {
         if (offset > 0 && offset < fileName.length() - 1) {
             suffix = fileName.substring(offset + 1);
         }
-        return suffix;
+        return suffix.toLowerCase();
     }
 
     /**
