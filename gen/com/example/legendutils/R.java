@@ -53,25 +53,34 @@ public final class R {
         public static int ic_launcher=0x7f020014;
     }
     public static final class id {
-        public static int button_OK=0x7f080009;
+        public static int button_OK=0x7f08000d;
         public static int button_dialog_file_cancel=0x7f080006;
         public static int button_dialog_file_ok=0x7f080007;
+        public static int button_listdialog_cancel=0x7f080009;
+        public static int button_listdialog_ok=0x7f08000a;
         public static int checkbox_dialog_file_all=0x7f080003;
-        public static int checkbox_file_item_select=0x7f08000d;
+        public static int checkbox_file_item_select=0x7f080014;
         public static int edittext_dialog_file_path=0x7f080002;
-        public static int image_file_icon=0x7f08000b;
+        public static int footer_layout_listdialog=0x7f080008;
+        public static int image_file_icon=0x7f080012;
         public static int imagebutton_dialog_file_back=0x7f080001;
+        public static int item_check=0x7f08000f;
+        public static int item_content=0x7f080010;
+        public static int item_layout=0x7f08000e;
         public static int layout_dialog_file_footer=0x7f080005;
         public static int layout_dialog_file_header=0x7f080000;
+        public static int list_dialog_list=0x7f08000b;
         public static int listview_dialog_file=0x7f080004;
-        public static int picker=0x7f080008;
-        public static int rootFileItemView=0x7f08000a;
-        public static int text_file_title=0x7f08000c;
+        public static int picker=0x7f08000c;
+        public static int rootFileItemView=0x7f080011;
+        public static int text_file_title=0x7f080013;
     }
     public static final class layout {
         public static int dialog_file=0x7f030000;
-        public static int dialog_number_picker=0x7f030001;
-        public static int view_file_item=0x7f030002;
+        public static int dialog_list=0x7f030001;
+        public static int dialog_number_picker=0x7f030002;
+        public static int item_list=0x7f030003;
+        public static int view_file_item=0x7f030004;
     }
     public static final class string {
         public static int app_name=0x7f060000;
