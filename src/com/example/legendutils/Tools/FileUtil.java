@@ -46,132 +46,69 @@ import android.widget.Toast;
 public class FileUtil {
 
     /**
-     * 普通文件
+     * parentFile是否包含sonFile,不检查文件存在性
+     * 
+     * @param parentFile
+     * @param sonFile
+     * @return
      */
-    public static final int FILE_TYPE_NORMAL = 0;
-    /**
-     * 文件夹
-     */
-    public static final int FILE_TYPE_FOLDER = 1;
-    /**
-     * 声音类型的文件
-     */
-    public static final int FILE_TYPE_AUDIO = 2;
-    /**
-     * 图像类型的文件
-     */
-    public static final int FILE_TYPE_IMAGE = 3;
-    /**
-     * 视频类型的文件
-     */
-    public static final int FILE_TYPE_VIDEO = 4;
-    /**
-     * APK文件
-     */
-    public static final int FILE_TYPE_APK = 5;
-    /**
-     * TXT文件
-     */
-    public static final int FILE_TYPE_TXT = 6;
-    /**
-     * ZIP文件
-     */
-    public static final int FILE_TYPE_ZIP = 7;
-    /**
-     * HTML文件
-     */
-    public static final int FILE_TYPE_HTML = 8;
-    /**
-     * WORD文件
-     */
-    public static final int FILE_TYPE_WORD = 9;
-    /**
-     * EXCEL文件
-     */
-    public static final int FILE_TYPE_EXCEL = 10;
-    /**
-     * PPT文件
-     */
-    public static final int FILE_TYPE_PPT = 11;
-    /**
-     * PDF文件
-     */
-    public static final int FILE_TYPE_PDF = 12;
-    /**
-     * 电子书文件
-     */
-    public static final int FILE_TYPE_EBOOK = 13;
-    /**
-     * 种子文件
-     */
-    public static final int FILE_TYPE_TORRENT = 14;
-    /**
-     * CHM文件
-     */
-    public static final int FILE_TYPE_CHM = 15;
+    public static boolean isAncestorOf(File parentFile, File sonFile) {
+        try {
+            String parentPath = parentFile.getCanonicalPath();
+            String sonPath = sonFile.getCanonicalPath();
+            if (parentPath.equals("/")) {
+                if (sonPath.length() > 1) {
+                    // sonPath='/abc'
+                    return true;
+                }
+            } else {
+                if (parentPath.lastIndexOf("/") != parentPath.length() - 1) {
+                    // 若不以/结尾
+                    parentPath += "/";
+                }
+                if (sonPath.length() > parentPath.length() && sonPath.indexOf(parentPath) == 0) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
 
-    public static final String[] soundSuffixArray = {
-            "mp3", "wav", "ogg", "midi"
-    };
-    public static final String[] imageSuffixArray = {
-            "jpg", "jpeg", "png", "bmp", "gif"
-    };
-    public static final String[] videoSuffixArray = {
-            "mp4", "avi", "rmvb", "flv", "mkv", "wmv",
-    };
-    public static final String[] apkSuffixArray = {
-            "apk"
-    };
-    public static final String[] txtSuffixArray = {
-            "txt", "xml", "java", "c", "cpp", "py", "log", "cs", "json"
-    };
-    public static final String[] zipSuffixArray = {
-            "zip", "rar", "gz", "7z", "jar", "img", "tar"
-    };
-    public static final String[] wordSuffixArray = {
-            "doc", "docx"
-    };
-    public static final String[] pptSuffixArray = {
-            "ppt", "pptx"
-    };
-    public static final String[] excelSuffixArray = {
-            "xsl", "xslx"
-    };
-    public static final String[] htmlSuffixArray = {
-            "html", "htm", "jsp", "asp", "php"
-    };
-    public static final String[] pdfSuffixArray = {
-            "pdf"
-    };
-    public static final String[] torrentSuffixArray = {
-            "torrent"
-    };
-    public static final String[] chmSuffixArray = {
-            "chm"
-    };
-    public static final String[] ebookSuffixArray = {
-            "epub", "caj", "ebk2", "ebk3", "umd"
-    };
+        }
 
-    // 写文件模式,可组合使用，sourceFile和destFile都是文件夹的情况三种模式都不会删除文件夹
-    public static final int Operation_Ski_All = 0x0;// 重名直接跳过
-    public static final int Operation_Merge = 0x1;// 只合并文件夹并不替换文件，意味着不删除任何文件
-    public static final int Operation_Merge_And_Overwrite = 0x2;// 合并文件夹并替换文件
-
-    public static interface FileOperationListener {
-
-        public void onComplete();
-
-        public void onProgress();
-
-        public void onError();
-
+        return false;
     }
 
-    private static final int BUFFER = 8192;
+    /**
+     * parentFile是否包含sonFile,不检查文件存在性
+     * 
+     * @param sonFile
+     * @param parentFile
+     * @return
+     */
+    public static boolean isDesendentOf(File sonFile, File parentFile) {
+        return isAncestorOf(parentFile, sonFile);
+    }
+
+    // 文件大小转String文字，b,kb,mb,gb
+    public static String convertStorage(long size) {
+        long kb = 1024;
+        long mb = kb * 1024;
+        long gb = mb * 1024;
+
+        if (size >= gb) {
+            return String.format("%.1f GB", (float) size / gb);
+        } else if (size >= mb) {
+            float f = (float) size / mb;
+            return String.format(f > 100 ? "%.0f MB" : "%.1f MB", f);
+        } else if (size >= kb) {
+            float f = (float) size / kb;
+            return String.format(f > 100 ? "%.0f KB" : "%.1f KB", f);
+        } else
+            return String.format("%d B", size);
+    }
 
     /**
-     * 将传入的file路径改为统一路径。比如storage/emulated/0\legacy等等，TODO
+     * 将传入的file路径改为统一路径。比如storage/emulated/0\legacy等等。
+     * /sdcard/data1/data2/data3剪切到storage/emulated/0/data1可能出错 TODO
      */
     public static void trimPath(File file) {
 
@@ -1586,4 +1523,129 @@ public class FileUtil {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * 普通文件
+     */
+    public static final int FILE_TYPE_NORMAL = 0;
+    /**
+     * 文件夹
+     */
+    public static final int FILE_TYPE_FOLDER = 1;
+    /**
+     * 声音类型的文件
+     */
+    public static final int FILE_TYPE_AUDIO = 2;
+    /**
+     * 图像类型的文件
+     */
+    public static final int FILE_TYPE_IMAGE = 3;
+    /**
+     * 视频类型的文件
+     */
+    public static final int FILE_TYPE_VIDEO = 4;
+    /**
+     * APK文件
+     */
+    public static final int FILE_TYPE_APK = 5;
+    /**
+     * TXT文件
+     */
+    public static final int FILE_TYPE_TXT = 6;
+    /**
+     * ZIP文件
+     */
+    public static final int FILE_TYPE_ZIP = 7;
+    /**
+     * HTML文件
+     */
+    public static final int FILE_TYPE_HTML = 8;
+    /**
+     * WORD文件
+     */
+    public static final int FILE_TYPE_WORD = 9;
+    /**
+     * EXCEL文件
+     */
+    public static final int FILE_TYPE_EXCEL = 10;
+    /**
+     * PPT文件
+     */
+    public static final int FILE_TYPE_PPT = 11;
+    /**
+     * PDF文件
+     */
+    public static final int FILE_TYPE_PDF = 12;
+    /**
+     * 电子书文件
+     */
+    public static final int FILE_TYPE_EBOOK = 13;
+    /**
+     * 种子文件
+     */
+    public static final int FILE_TYPE_TORRENT = 14;
+    /**
+     * CHM文件
+     */
+    public static final int FILE_TYPE_CHM = 15;
+
+    public static final String[] soundSuffixArray = {
+            "mp3", "wav", "ogg", "midi"
+    };
+    public static final String[] imageSuffixArray = {
+            "jpg", "jpeg", "png", "bmp", "gif"
+    };
+    public static final String[] videoSuffixArray = {
+            "mp4", "avi", "rmvb", "flv", "mkv", "wmv",
+    };
+    public static final String[] apkSuffixArray = {
+            "apk"
+    };
+    public static final String[] txtSuffixArray = {
+            "txt", "xml", "java", "c", "cpp", "py", "log", "cs", "json"
+    };
+    public static final String[] zipSuffixArray = {
+            "zip", "rar", "gz", "7z", "jar", "img", "tar"
+    };
+    public static final String[] wordSuffixArray = {
+            "doc", "docx"
+    };
+    public static final String[] pptSuffixArray = {
+            "ppt", "pptx"
+    };
+    public static final String[] excelSuffixArray = {
+            "xsl", "xslx"
+    };
+    public static final String[] htmlSuffixArray = {
+            "html", "htm", "jsp", "asp", "php"
+    };
+    public static final String[] pdfSuffixArray = {
+            "pdf"
+    };
+    public static final String[] torrentSuffixArray = {
+            "torrent"
+    };
+    public static final String[] chmSuffixArray = {
+            "chm"
+    };
+    public static final String[] ebookSuffixArray = {
+            "epub", "caj", "ebk2", "ebk3", "umd"
+    };
+
+    // 写文件模式,可组合使用，sourceFile和destFile都是文件夹的情况三种模式都不会删除文件夹
+    public static final int Operation_Ski_All = 0x0;// 重名直接跳过
+    public static final int Operation_Merge = 0x1;// 只合并文件夹并不替换文件，意味着不删除任何文件
+    public static final int Operation_Merge_And_Overwrite = 0x2;// 合并文件夹并替换文件
+
+    public static interface FileOperationListener {
+
+        public void onComplete();
+
+        public void onProgress();
+
+        public void onError();
+
+    }
+
+    private static final int BUFFER = 8192;
 }
