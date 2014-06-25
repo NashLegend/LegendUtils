@@ -5,7 +5,7 @@ Various tools
 
 **markdown test below**
 
-``` 
+``` Java
 	public float getInterpolation(float x) {
 		float result;
 		if (x < 0.5) {
