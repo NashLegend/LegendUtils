@@ -4,14 +4,13 @@ LegendUtils
 Various tools
 
 ``` python
-@requires_authorization
-def somefunc(param1='', param2=0):
-    '''A docstring'''
-    if param1 > param2: # interesting
-        print 'Greater'
-    return (param2 - param1 + 1) or None
-class SomeClass:
-    pass
->>> message = '''interpreter
-... prompt'''
+public float getInterpolation(float x) {
+	float result;
+	if (x < 0.5) {
+		result = (float) (1.0f - Math.pow((1.0f - 2 * x), 2 * mFactor)) / 2;
+	} else {
+		result = (float) Math.pow((x - 0.5) * 2, 2 * mFactor) / 2 + 0.5f;
+	}
+	return result;
+}
 ```
