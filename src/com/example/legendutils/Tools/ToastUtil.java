@@ -24,6 +24,9 @@ public class ToastUtil {
 	 * @param text
 	 */
 	public static void showToast(Context context, String text) {
+		if (toast != null) {
+			toast.cancel();
+		}
 		toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
 		toast.show();
 	}
@@ -35,6 +38,9 @@ public class ToastUtil {
 	 * @param text
 	 */
 	public static void showToast(Context context, int resId) {
+		if (toast != null) {
+			toast.cancel();
+		}
 		toast = Toast.makeText(context, resId, Toast.LENGTH_SHORT);
 		toast.show();
 	}
@@ -47,6 +53,9 @@ public class ToastUtil {
 	 * @param duration
 	 */
 	public static void showToast(Context context, String text, int duration) {
+		if (toast != null) {
+			toast.cancel();
+		}
 		toast = Toast.makeText(context, text, duration);
 		toast.show();
 	}
@@ -59,6 +68,9 @@ public class ToastUtil {
 	 * @param duration
 	 */
 	public static void showToast(Context context, int resId, int duration) {
+		if (toast != null) {
+			toast.cancel();
+		}
 		toast = Toast.makeText(context, resId, duration);
 		toast.show();
 	}
