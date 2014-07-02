@@ -43,16 +43,7 @@ public class ZipUtil {
 						.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
 				parameters.setPassword(pwd);
 			}
-			for (Iterator<File> iterator = Files2Add.iterator(); iterator
-					.hasNext();) {
-				File file = (File) iterator.next();
-				if (file.isFile()) {
-					zipFile.addFile(file, parameters);
-				} else if (file.isDirectory()) {
-					zipFile.addFolder(file, parameters);
-				}
-
-			}
+			zipFile.createZipFileFromFiles(Files2Add, parameters);
 		} catch (ZipException e) {
 			return false;
 		}
@@ -128,15 +119,7 @@ public class ZipUtil {
 								.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
 						parameters.setPassword(pwd);
 					}
-					for (Iterator<File> iterator = Files2Add.iterator(); iterator
-							.hasNext();) {
-						File file = (File) iterator.next();
-						if (file.isFile()) {
-							zipFile.addFile(file, parameters);
-						} else if (file.isDirectory()) {
-							zipFile.addFolder(file, parameters);
-						}
-					}
+					zipFile.createZipFileFromFiles(Files2Add, parameters);
 					ProgressMonitor progressMonitor = zipFile
 							.getProgressMonitor();
 					if (listener != null) {
@@ -145,8 +128,98 @@ public class ZipUtil {
 							if (pro != currentprog) {
 								publishProgress(progressMonitor
 										.getPercentDone());
+								pro = currentprog;
 							}
-							pro = currentprog;
+						}
+					} else {
+						while (progressMonitor.getState() == ProgressMonitor.STATE_BUSY) {
+							// do nothing
+						}
+					}
+
+					return progressMonitor;
+
+				} catch (ZipException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+
+			@Override
+			protected void onProgressUpdate(Integer... values) {
+				listener.onProgress(values[0]);
+				super.onProgressUpdate(values);
+			}
+
+			@Override
+			protected void onPostExecute(ProgressMonitor progressMonitor) {
+				super.onPostExecute(progressMonitor);
+				if (listener != null) {
+					if (progressMonitor == null) {
+						listener.onError("");
+					} else {
+						switch (progressMonitor.getResult()) {
+						case ProgressMonitor.RESULT_ERROR:
+							if (progressMonitor.getException() != null) {
+								listener.onError(progressMonitor.getException()
+										.getMessage());
+							} else {
+								listener.onError("An error occurred without any exception");
+							}
+							break;
+						case ProgressMonitor.RESULT_CANCELLED:
+							listener.onCancelled();
+							break;
+						case ProgressMonitor.RESULT_SUCCESS:
+							listener.onComplete();
+							break;
+
+						default:
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		ZipTask task = new ZipTask();
+		task.execute("");
+	}
+	
+	/**
+	 * @param sourceFile
+	 * @param destFile
+	 * @param listener
+	 */
+	public static void unZipAsync(final File sourceFile, final String destFile,
+			final String pwd, final ZipOperationListener listener) {
+
+		class UnzipTask extends AsyncTask<String, Integer, ProgressMonitor> {
+
+			@Override
+			protected ProgressMonitor doInBackground(String... params) {
+				int pro = -1;
+				try {
+					ZipFile zipFile = new ZipFile(sourceFile);
+					zipFile.setRunInThread(true);
+					if (zipFile.isEncrypted()) {
+						if (pwd == null || pwd.equals("")) {
+							return null;
+						}
+						zipFile.setPassword(pwd);
+					}
+					zipFile.extractAll(destFile);
+					
+					ProgressMonitor progressMonitor = zipFile
+							.getProgressMonitor();
+					if (listener != null) {
+						while (progressMonitor.getState() == ProgressMonitor.STATE_BUSY) {
+							int currentprog = progressMonitor.getPercentDone();
+							if (pro != currentprog) {
+								publishProgress(progressMonitor
+										.getPercentDone());
+								pro = currentprog;
+							}
 						}
 					} else {
 						while (progressMonitor.getState() == ProgressMonitor.STATE_BUSY) {
@@ -191,9 +264,6 @@ public class ZipUtil {
 						case ProgressMonitor.RESULT_SUCCESS:
 							listener.onComplete();
 							break;
-						case ProgressMonitor.RESULT_WORKING:
-							listener.onWorking();
-							break;
 
 						default:
 							break;
@@ -203,7 +273,7 @@ public class ZipUtil {
 			}
 		}
 
-		ZipTask task = new ZipTask();
+		UnzipTask task = new UnzipTask();
 		task.execute("");
 	}
 
@@ -216,8 +286,6 @@ public class ZipUtil {
 		public void onError(String message);
 
 		public void onCancelled();
-
-		public void onWorking();
 
 	}
 }
