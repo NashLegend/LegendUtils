@@ -7,15 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.channels.FileChannel;
-import java.util.Enumeration;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedOutputStream;
-
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipFile;
-import org.apache.tools.zip.ZipOutputStream;
 
 import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
@@ -32,7 +24,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore.Video.Thumbnails;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * TODO 。
@@ -108,131 +99,10 @@ public class FileUtil {
 
 	/**
 	 * 将传入的file路径改为统一路径。比如storage/emulated/0\legacy等等。
-	 * /sdcard/data1/data2/data3剪切到storage/emulated/0/data1可能出错 
+	 * /sdcard/data1/data2/data3剪切到storage/emulated/0/data1可能出错
 	 */
 	public static void trimPath(File file) {
-		//TODO
-	}
-
-	/**
-	 * @param sourceFile
-	 * @param destFile
-	 */
-	public static boolean zip(File sourceFile, File destFile) {
-		if (!sourceFile.exists())
-			throw new NullPointerException("sourceFile not exist");
-		try {
-			FileOutputStream fileOutputStream = new FileOutputStream(destFile);
-			CheckedOutputStream cos = new CheckedOutputStream(fileOutputStream,
-					new CRC32());
-			ZipOutputStream out = new ZipOutputStream(cos);
-			String basedir = "";
-			zip(sourceFile, out, basedir);
-			out.close();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return true;
-	}
-
-	/**
-	 * @param sourceFile
-	 * @param destFile
-	 */
-	public static boolean zip(File[] sourceFile, File destFile) {
-		for (int i = 0; i < sourceFile.length; i++) {
-			File file = sourceFile[i];
-			if (!file.exists())
-				throw new NullPointerException(
-						"one or more sourceFiles not exist");
-		}
-		try {
-			FileOutputStream fileOutputStream = new FileOutputStream(destFile);
-			CheckedOutputStream cos = new CheckedOutputStream(fileOutputStream,
-					new CRC32());
-			ZipOutputStream out = new ZipOutputStream(cos);
-			for (int i = 0; i < sourceFile.length; i++) {
-				File file = sourceFile[i];
-				if (!zip(file, out, "")) {
-					return false;
-				}
-			}
-			out.close();
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * @param sourceFile
-	 * @param destFile
-	 * @param listener
-	 */
-	public static Runnable zipAsync(final File[] sourceFiles, final File destFile,
-			final FileOperationListener listener) {
-		class ZipTask extends AsyncTask<String, Integer, Boolean> {
-
-			@Override
-			protected Boolean doInBackground(String... params) {
-				return zip(sourceFiles, destFile);
-			}
-
-			@Override
-			protected void onPostExecute(Boolean result) {
-				super.onPostExecute(result);
-				if (listener != null) {
-					if (result) {
-						listener.onComplete();
-					} else {
-						listener.onError();
-					}
-				}
-			}
-		}
-
-		ZipTask task = new ZipTask();
-		task.execute("");
-		return null;
-	}
-
-	/**
-	 * @param sourceFile
-	 * @param destFile
-	 * @throws Exception
-	 */
-	public static void unZip(File sourceFile, File destFile) throws Exception {
-		if (!sourceFile.exists()) {
-			throw new NullPointerException("sourceFile not exist");
-		}
-		ZipFile zipFile = new ZipFile(sourceFile);
-		Enumeration<?> e = zipFile.getEntries();
-		while (e.hasMoreElements()) {
-			ZipEntry zipEntry = (ZipEntry) e.nextElement();
-			if (zipEntry.isDirectory()) {
-				String name = zipEntry.getName();
-				name = name.substring(0, name.length() - 1);
-				File f = new File(destFile, name);
-				f.mkdirs();
-			} else {
-				File f = new File(destFile, zipEntry.getName());
-				f.getParentFile().mkdirs();
-				f.createNewFile();
-				InputStream is = zipFile.getInputStream(zipEntry);
-				FileOutputStream fos = new FileOutputStream(f);
-				int length = 0;
-				byte[] b = new byte[BUFFER];
-				while ((length = is.read(b, 0, BUFFER)) != -1) {
-					fos.write(b, 0, length);
-				}
-				is.close();
-				fos.close();
-			}
-		}
-
-		if (zipFile != null) {
-			zipFile.close();
-		}
+		// TODO
 	}
 
 	/**
@@ -340,7 +210,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -382,7 +252,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -442,7 +312,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -497,7 +367,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -546,7 +416,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -606,7 +476,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -647,7 +517,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -684,7 +554,7 @@ public class FileUtil {
 					if (result) {
 						listener.onComplete();
 					} else {
-						listener.onError();
+						listener.onError("");
 					}
 				}
 			}
@@ -925,7 +795,6 @@ public class FileUtil {
 				e.printStackTrace();
 			}
 		}
-		int size = 0;
 		int tagLen = tag.length;
 		byte[] tmp = new byte[tagLen];
 		for (int j = len - tagLen; j >= 0; j--) {
@@ -937,7 +806,6 @@ public class FileUtil {
 				if (tmp[i] != tag[i])
 					break;
 				if (i == tagLen - 1) {
-					size++;
 					return j;
 				}
 			}
@@ -1519,53 +1387,6 @@ public class FileUtil {
 		return false;
 	}
 
-	private static boolean zip(File file, ZipOutputStream out, String basedir) {
-		boolean flag = true;
-		if (file.isDirectory()) {
-			flag = zipDirectory(file, out, basedir);
-		} else {
-			flag = zipFile(file, out, basedir);
-		}
-		return flag; 
-			
-	}
-
-	private static boolean zipDirectory(File dir, ZipOutputStream out,
-			String basedir) {
-		if (!dir.exists())
-			throw new NullPointerException("file not existed");
-
-		File[] files = dir.listFiles();
-		for (int i = 0; i < files.length; i++) {
-			if (!zip(files[i], out, basedir + dir.getName() + "/")) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private static boolean zipFile(File file, ZipOutputStream out,
-			String basedir) {
-		if (!file.exists()) {
-			throw new NullPointerException("file not existed");
-		}
-		try {
-			BufferedInputStream bis = new BufferedInputStream(
-					new FileInputStream(file));
-			ZipEntry entry = new ZipEntry(basedir + file.getName());
-			out.putNextEntry(entry);
-			int count;
-			byte data[] = new byte[BUFFER];
-			while ((count = bis.read(data, 0, BUFFER)) != -1) {
-				out.write(data, 0, count);
-			}
-			bis.close();
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
-	}
-
 	/**
 	 * 普通文件
 	 */
@@ -1662,11 +1483,9 @@ public class FileUtil {
 
 		public void onComplete();
 
-		public void onProgress();
+		public void onProgress(int progress);
 
-		public void onError();
+		public void onError(String message);
 
 	}
-
-	private static final int BUFFER = 8192;
 }
