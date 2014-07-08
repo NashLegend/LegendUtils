@@ -52,7 +52,6 @@ public class FileUtil {
 			File f;
 			String line;
 			while ((line = reader.readLine()) != null) {
-				Log.i("file", line);
 				f = new File(line);
 				path.add(f);
 			}
@@ -618,20 +617,6 @@ public class FileUtil {
 		return flag;
 	}
 
-	public static boolean delete(File[] files) {
-		if (files.length > 0) {
-			for (int j = 0; j < files.length; j++) {
-				File file = files[j];
-				if (!delete(file)) {
-					return false;
-				}
-			}
-		} else {
-
-		}
-		return true;
-	}
-
 	public static Runnable deleteAsync(final File[] files,
 			final Context context, final FileOperationListener listener) {
 		class DeleteTask extends AsyncTask<String, Integer, Boolean> {
@@ -659,21 +644,44 @@ public class FileUtil {
 		return null;
 	}
 
-	public static boolean delete(File file) {
+	private static boolean delete(File file) {
 		if (file == null) {
 			throw new NullPointerException("file is null");
 		}
-		File[] files = new File[] { file };
-		return delete(files);
+		if (file.isFile()) {
+			return file.delete();
+		}
+		if (file.isDirectory()) {
+			return deleteFolder(file);
+		}
+		return false;
 	}
 
-	public static Runnable deleteAsync(final File file,
+	public static boolean delete(File file, Context context) {
+		if (file == null) {
+			throw new NullPointerException("file is null");
+		}
+		boolean flag = false;
+		String[] filePaths = new String[] { file.getAbsolutePath() };
+		if (file.isFile()) {
+			flag = file.delete();
+		}
+		if (file.isDirectory()) {
+			flag = deleteFolder(file);
+		}
+		if (context != null) {
+			MediaScannerConnection.scanFile(context, filePaths, null, null);
+		}
+		return flag;
+	}
+
+	public static Runnable deleteAsync(final File file, final Context context,
 			final FileOperationListener listener) {
 		class DeleteTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
-				return delete(file);
+				return delete(file, context);
 			}
 
 			@Override
