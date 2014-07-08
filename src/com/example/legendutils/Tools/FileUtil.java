@@ -2,12 +2,14 @@ package com.example.legendutils.Tools;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
@@ -35,6 +37,34 @@ import android.util.Log;
  */
 @SuppressLint("DefaultLocale")
 public class FileUtil {
+
+	public static ArrayList<File> ListFilesWithRoot(String dirPath) {
+		if (dirPath.lastIndexOf("/") != dirPath.length() - 1) {
+			dirPath += "/";
+		}
+		BufferedReader reader = null; // errReader = null;
+		ArrayList<File> path = new ArrayList<File>();
+		try {
+			reader = SystemUtil.shellExecute("IFS='\n';CURDIR='"
+					+ getCmdPath(dirPath)
+					+ "';for i in `ls $CURDIR`; do echo \"$CURDIR$i\"; done",
+					true);
+			File f;
+			String line;
+			while ((line = reader.readLine()) != null) {
+				Log.i("file", line);
+				f = new File(line);
+				path.add(f);
+			}
+		} catch (Exception e) {
+			Log.e("file", e.getMessage());
+		}
+		return path;
+	}
+
+	public static String getCmdPath(String path) {
+		return path.replace(" ", "\\ ").replace("'", "\\'");
+	}
 
 	/**
 	 * parentFile是否包含sonFile,不检查文件存在性
@@ -65,7 +95,6 @@ public class FileUtil {
 		} catch (IOException e) {
 
 		}
-
 		return false;
 	}
 
@@ -386,7 +415,7 @@ public class FileUtil {
 		} else {
 			flag = false;
 		}
-		
+
 		if (context != null) {
 			MediaScannerConnection.scanFile(
 					context,
