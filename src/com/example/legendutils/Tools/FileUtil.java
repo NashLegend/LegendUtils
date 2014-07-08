@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
@@ -25,6 +26,7 @@ import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.provider.MediaStore.Video.Thumbnails;
 import android.util.Log;
 
@@ -38,12 +40,22 @@ import android.util.Log;
 @SuppressLint("DefaultLocale")
 public class FileUtil {
 
-	public static ArrayList<File> ListFilesWithRoot(String dirPath) {
+	public static boolean isInExternalStorage(File file) {
+		if (isDesendentOf(file, Environment.getExternalStorageDirectory())
+				|| isDesendentOf(file, new File("/storage/emulated/legacy"))
+				|| isDesendentOf(file, new File("/storage/ext_sd"))) {
+			return true;
+		}
+		return false;
+	}
+
+	public static File[] ListFilesWithRoot(String dirPath) {
 		if (dirPath.lastIndexOf("/") != dirPath.length() - 1) {
 			dirPath += "/";
 		}
 		BufferedReader reader = null; // errReader = null;
 		ArrayList<File> path = new ArrayList<File>();
+		File[] files = null;
 		try {
 			reader = SystemUtil.shellExecute("IFS='\n';CURDIR='"
 					+ getCmdPath(dirPath)
@@ -55,10 +67,14 @@ public class FileUtil {
 				f = new File(line);
 				path.add(f);
 			}
+			files = new File[path.size()];
+			for (int i = 0; i < path.size(); i++) {
+				files[i] = path.get(i);
+			}
 		} catch (Exception e) {
 			Log.e("file", e.getMessage());
 		}
-		return path;
+		return files;
 	}
 
 	public static String getCmdPath(String path) {
