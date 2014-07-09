@@ -39,6 +39,24 @@ import android.util.Log;
 @SuppressLint("DefaultLocale")
 public class FileUtil {
 
+	/**
+	 * 判断文件是否是符号链接
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	public static boolean isSymboliclink(File file) throws IOException {
+		File canon;
+		if (file.getParent() == null) {
+			canon = file;
+		} else {
+			File canonDir = file.getParentFile().getCanonicalFile();
+			canon = new File(canonDir, file.getName());
+		}
+		return !canon.getCanonicalFile().equals(canon.getAbsoluteFile());
+	}
+
 	public static boolean isInExternalStorage(File file) {
 		if (isDesendentOf(file, Environment.getExternalStorageDirectory())
 				|| isDesendentOf(file, new File("/storage/emulated/legacy"))
