@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -657,7 +658,11 @@ public class FileUtil {
 			break;
 		case FILE_TYPE_AUDIO:// 获取音乐文件缩略图，
 			if (getFileSuffix(file).equals("mp3")) {
-				thumb = getMP3Thumbnail(file);
+				if (android.os.Build.VERSION.SDK_INT >= 10) {
+					thumb = extractMediaThumbnail(file);
+				} else {
+					thumb = getMP3Thumbnail(file);
+				}
 			}
 			break;
 		case FILE_TYPE_APK:// 获取apk文件缩略图
@@ -691,7 +696,12 @@ public class FileUtil {
 			break;
 		case FILE_TYPE_AUDIO:// 获取音乐文件缩略图，
 			if (getFileSuffix(file).equals("mp3")) {
-				Bitmap tmp = getMP3Thumbnail(file);
+				Bitmap tmp = null;
+				if (android.os.Build.VERSION.SDK_INT >= 10) {
+					tmp = extractMediaThumbnail(file);
+				} else {
+					tmp = getMP3Thumbnail(file);
+				}
 				thumb = ThumbnailUtils.extractThumbnail(tmp, width, height);
 			}
 			break;
@@ -767,8 +777,29 @@ public class FileUtil {
 							Thumbnails.MICRO_KIND), width, height,
 					ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
 		}
-
 		return thumb;
+	}
+
+	/**
+	 * 对于mp3文件来说，与getMP3Thumbnail()效果是一样的，只不过可能略快
+	 * 
+	 * @param file
+	 * @return
+	 */
+	@SuppressLint("NewApi")
+	public static Bitmap extractMediaThumbnail(File file) {
+		Bitmap bitmap = null;
+		try {
+			MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+			mmr.setDataSource(file.getAbsolutePath());
+			byte[] data = mmr.getEmbeddedPicture();
+			if (data != null) {
+				bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+			}
+		} catch (Exception e) {
+			
+		}
+		return bitmap;
 	}
 
 	/**
@@ -776,6 +807,7 @@ public class FileUtil {
 	 * 
 	 * @param file
 	 * @return
+	 * 
 	 */
 	public static Bitmap getMP3Thumbnail(File file) {
 		int buffSize = 204800;//
