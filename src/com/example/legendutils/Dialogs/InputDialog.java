@@ -24,6 +24,7 @@ public class InputDialog extends Dialog {
 		private String title = "";
 		private String OkayString = "Okay";
 		private String NayString = "Nay";
+		private String input = "";
 		private InputDialog dialog;
 		private boolean canceledOnTouchOutside = true;
 		private boolean cancelable = true;
@@ -59,6 +60,11 @@ public class InputDialog extends Dialog {
 			return this;
 		}
 
+		public Builder setInputText(String input) {
+			this.input = input;
+			return this;
+		}
+
 		public InputDialog create() {
 			dialog = new InputDialog(mContext);
 			LayoutInflater inflater = (LayoutInflater) mContext
@@ -75,6 +81,7 @@ public class InputDialog extends Dialog {
 					.findViewById(R.id.button_dialog_input_ok);
 			Button nayButton = (Button) layout
 					.findViewById(R.id.button_dialog_input_cancel);
+			inputText.setText(input);
 			okayButton.setText(OkayString);
 			nayButton.setText(NayString);
 			okayButton.setOnClickListener(new View.OnClickListener() {

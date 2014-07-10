@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import android.annotation.SuppressLint;
@@ -28,17 +29,123 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore.Video.Thumbnails;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
  * TODO 。
  * 文件处理时要对路径做统一处理，/sdcard/下的文件移动到/storage/emulated/0/xx/下会失败，但是移动到/sdcard/xx/
  * 下会成功。 Thread-safe? 复制、移动、删除、压缩、解压、抽取缩略图、取得文件类型、文件/文件夹大小计算、文件夹子文件数量计算、
+ * 以root权限显示系统文件、判断文件从属关系、判断符号链接、转换文件大小为可读String；
  * 
  * @author NashLegend
  */
 @SuppressLint("DefaultLocale")
 public class FileUtil {
+
+	private static String FolderKey = ".folder.";
+
+	/**
+	 * 以Windows重命名规则批量重命名文件，不负责检查name是否为null或者为空
+	 * 
+	 * @param files
+	 * @param name
+	 */
+	public static void rename(File[] files, String name) {
+		if (name != null) {
+			name = name.trim();
+			if (name.equals("")) {
+				return;
+			}
+		} else {
+			return;
+		}
+		if (files != null && files.length > 0) {
+			if (files.length == 1) {
+				File file = files[0];
+				if (file.getParent() != null) {
+					File newPath = new File(file.getParent(), name);
+					file.renameTo(newPath);
+				}
+			} else {
+				HashMap<String, Integer> suffixGroup = new HashMap<String, Integer>();
+				for (int i = 0; i < files.length; i++) {
+					File file = files[i];
+					File newpath;
+					int num = 0;
+					String newName = "";
+					String suff = "";
+					if (file.isDirectory()) {
+						suff = FolderKey;
+					} else {
+						suff = getFileSuffix(file);
+					}
+					if (suffixGroup.containsKey(suff)) {
+						num = suffixGroup.get(suff);
+					} else {
+						if (hasMoreSuffix(files, suff)) {
+							num = 0;
+						} else {
+							num = -1;
+						}
+					}
+
+					// 检查重名文件，如果已经有重名文件，则num+1
+					// 这里有一个小bug，如果newpath已经存在，并且是在files数组里面
+					// 那么最终重命名的时候，会跳过newpath的名字
+					// 最终重命名完成的列表里面将不会有这个newpath
+					do {
+						num++;
+						if (num == 0) {
+							newName = name;
+						} else {
+							newName = name + " (" + num + ")";
+						}
+						newpath = new File(file.getParent(), newName
+								+ (FolderKey.equals(suff) ? ""
+										: suff.length() > 0 ? "." + suff : 0));
+					} while (newpath.exists());
+
+					suffixGroup.put(suff, num);
+					file.renameTo(newpath);
+				}
+			}
+		}
+	}
+
+	private static boolean hasMoreSuffix(File[] files, String suffix) {
+		int num = 0;
+		for (int i = 0; i < files.length; i++) {
+			File file = files[i];
+			if (suffix.equals(FolderKey)) {
+				if (file.isDirectory()) {
+					num++;
+				}
+			} else {
+				if (getFileSuffix(file).equals(suffix)) {
+					num++;
+				}
+			}
+
+			if (num > 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static String getNameWithoutSuffix(File file) {
+		String name = "";
+		String fileName = file.getName();
+		int offset = fileName.lastIndexOf(".");
+		// -1则没有后缀。offset == fileName.length() - 1，表示"."是最后一个字符，没有后缀
+		if (offset >= 0 && offset < fileName.length() - 1) {
+			name = fileName.substring(0, offset);
+		} else {
+			name = fileName;
+		}
+		return name;
+	}
 
 	/**
 	 * 判断文件是否是符号链接
@@ -797,7 +904,7 @@ public class FileUtil {
 				bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 			}
 		} catch (Exception e) {
-			
+
 		}
 		return bitmap;
 	}
@@ -1095,9 +1202,7 @@ public class FileUtil {
 		String fileName = file.getName();
 		String suffix = "";
 		int offset = fileName.lastIndexOf(".");
-		// -1则没有后缀。0,则表示是一个隐藏文件而没有后缀，offset == fileName.length() -
-		// 1，表示"."是最后一个字符，没有后缀
-		if (offset > 0 && offset < fileName.length() - 1) {
+		if (offset >= 0) {
 			suffix = fileName.substring(offset + 1);
 		}
 		return suffix.toLowerCase();
