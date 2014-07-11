@@ -24,6 +24,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -51,7 +52,7 @@ public class FileUtil {
 	 * @param files
 	 * @param name
 	 */
-	public static void rename(File[] files, String name) {
+	public static void rename(File[] files, String name, Context context) {
 		if (name != null) {
 			name = name.trim();
 			if (name.equals("")) {
@@ -61,11 +62,13 @@ public class FileUtil {
 			return;
 		}
 		if (files != null && files.length > 0) {
+			String[] scanPaths = new String[files.length];
 			if (files.length == 1) {
 				File file = files[0];
 				if (file.getParent() != null) {
 					File newPath = new File(file.getParent(), name);
 					file.renameTo(newPath);
+					scanPaths[0] = newPath.getAbsolutePath();
 				}
 			} else {
 				HashMap<String, Integer> suffixGroup = new HashMap<String, Integer>();
@@ -108,7 +111,11 @@ public class FileUtil {
 
 					suffixGroup.put(suff, num);
 					file.renameTo(newpath);
+					scanPaths[i] = newpath.getAbsolutePath();
 				}
+			}
+			if (context != null) {
+				MediaScannerConnection.scanFile(context, scanPaths, null, null);
 			}
 		}
 	}
@@ -341,36 +348,38 @@ public class FileUtil {
 		return size;
 	}
 
-	/**
-	 * @param sourceFile
-	 * @param destFile
-	 * @return
-	 */
-	private static boolean copy2File(File sourceFile, File destFile,
-			int operationType) {
+	public static boolean copy2File(File sourceFile, File destFile,
+			int operationType, Context context) {
+		boolean flag = true;
 		if (ensureSourceAndDestFileValid(sourceFile, destFile, operationType)) {
 			if (sourceFile.equals(destFile)) {
 				return true;
 			}
 			if (sourceFile.isFile()) {
-				return copy2SingleFile(sourceFile, destFile, operationType);
+				flag = copy2SingleFile(sourceFile, destFile, operationType);
 			} else {
-				return copy2SingleFolder(sourceFile, destFile, operationType);
+				flag = copy2SingleFolder(sourceFile, destFile, operationType);
 			}
 		} else {
-			return false;
+			flag = false;
 		}
+		if (context != null) {
+			MediaScannerConnection.scanFile(context,
+					new String[] { destFile.getAbsolutePath() }, null, null);
+		}
+		return flag;
 	}
 
 	public static Runnable copy2FileAsync(final File sourceFile,
-			final File destFile, final FileOperationListener listener) {
+			final File destFile, final Context context,
+			final FileOperationListener listener) {
 
 		class CopyTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
 				return copy2File(sourceFile, destFile,
-						FileUtil.Operation_Merge_And_Overwrite);
+						FileUtil.Operation_Merge_And_Overwrite, context);
 			}
 
 			@Override
@@ -393,7 +402,7 @@ public class FileUtil {
 	}
 
 	public static boolean copy2Directory(File sourceFile, File destFile,
-			int operationType) {
+			int operationType, Context context) {
 		if (sourceFile == null || destFile == null) {
 			throw new NullPointerException(sourceFile == null ? "sourceFile"
 					: "destFile" + " cannot be null");
@@ -402,17 +411,18 @@ public class FileUtil {
 			throw new NullPointerException("sourceFile does not exist");
 		}
 		File[] sourceFiles = { sourceFile };
-		return copy2Directory(sourceFiles, destFile, operationType);
+		return copy2Directory(sourceFiles, destFile, operationType, context);
 	}
 
 	public static Runnable copy2DirectoryAsync(final File sourceFile,
-			final File destFile, final FileOperationListener listener) {
+			final File destFile, final Context context,
+			final FileOperationListener listener) {
 		class CopyTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
 				return copy2Directory(sourceFile, destFile,
-						FileUtil.Operation_Merge_And_Overwrite);
+						FileUtil.Operation_Merge_And_Overwrite, context);
 			}
 
 			@Override
@@ -434,7 +444,7 @@ public class FileUtil {
 	}
 
 	public static boolean copy2Directory(File[] sourceFiles, File destFile,
-			int operationType) {
+			int operationType, Context context) {
 
 		if (sourceFiles == null || destFile == null) {
 			throw new NullPointerException(sourceFiles == null ? "sourceFile"
@@ -457,10 +467,13 @@ public class FileUtil {
 				File finalFile = new File(destFile.getAbsolutePath(),
 						sourceFile.getName());
 				filePaths[i] = finalFile.getAbsolutePath();
-				if (!copy2File(sourceFile, finalFile, operationType)) {
+				if (!copy2File(sourceFile, finalFile, operationType, null)) {
 					flag = false;
 					break;
 				}
+			}
+			if (context != null) {
+				MediaScannerConnection.scanFile(context, filePaths, null, null);
 			}
 			return flag;
 		} else {
@@ -469,13 +482,14 @@ public class FileUtil {
 	}
 
 	public static Runnable copy2DirectoryAsync(final File[] sourceFiles,
-			final File destFile, final FileOperationListener listener) {
+			final File destFile, final Context context,
+			final FileOperationListener listener) {
 		class CopyTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
 				return copy2Directory(sourceFiles, destFile,
-						FileUtil.Operation_Merge_And_Overwrite);
+						FileUtil.Operation_Merge_And_Overwrite, context);
 			}
 
 			@Override
@@ -504,7 +518,8 @@ public class FileUtil {
 	 * @return
 	 */
 	public static boolean move2File(File sourceFile, File destFile,
-			int operationType) {
+			int operationType, Context context) {
+		boolean flag = true;
 		if (ensureSourceAndDestFileValid(sourceFile, destFile, operationType)) {
 			// 这里不必检查是否sourceFile和destFile是同一个文件，renameTo自然会返回true
 			// renameTo当存在重名文件时将返回false,所以不可用。
@@ -514,23 +529,32 @@ public class FileUtil {
 				return true;
 			}
 			if (sourceFile.isFile()) {
-				return move2SingleFile(sourceFile, destFile, operationType);
+				flag = move2SingleFile(sourceFile, destFile, operationType);
 			} else {
-				return move2SingleFolder(sourceFile, destFile, operationType);
+				flag = move2SingleFolder(sourceFile, destFile, operationType);
 			}
 		} else {
-			return false;
+			flag = false;
 		}
+
+		if (context != null) {
+			MediaScannerConnection.scanFile(
+					context,
+					new String[] { sourceFile.getAbsolutePath(),
+							destFile.getAbsolutePath() }, null, null);
+		}
+		return flag;
 	}
 
 	public static Runnable move2FileAsync(final File sourceFile,
-			final File destFile, final FileOperationListener listener) {
+			final File destFile, final Context context,
+			final FileOperationListener listener) {
 		class MoveTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
 				return move2File(sourceFile, destFile,
-						FileUtil.Operation_Merge_And_Overwrite);
+						FileUtil.Operation_Merge_And_Overwrite, context);
 			}
 
 			@Override
@@ -560,7 +584,7 @@ public class FileUtil {
 	 * @return
 	 */
 	public static boolean move2Directory(File sourceFile, File destFile,
-			int operationType) {
+			int operationType, Context context) {
 		if (sourceFile == null || destFile == null) {
 			throw new NullPointerException(sourceFile == null ? "sourceFile"
 					: "destFile" + " cannot be null");
@@ -569,17 +593,18 @@ public class FileUtil {
 			throw new NullPointerException("sourceFile does not exist");
 		}
 		File[] sourceFiles = { sourceFile };
-		return move2Directory(sourceFiles, destFile, operationType);
+		return move2Directory(sourceFiles, destFile, operationType, context);
 	}
 
 	public static Runnable move2DirectoryAsync(final File sourceFile,
-			final File destFile, final FileOperationListener listener) {
+			final File destFile, final Context context,
+			final FileOperationListener listener) {
 		class MoveTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
 				return move2Directory(sourceFile, destFile,
-						FileUtil.Operation_Merge_And_Overwrite);
+						FileUtil.Operation_Merge_And_Overwrite, context);
 			}
 
 			@Override
@@ -602,7 +627,7 @@ public class FileUtil {
 	}
 
 	public static boolean move2Directory(File[] sourceFiles, File destFile,
-			int operationType) {
+			int operationType, Context context) {
 		if (sourceFiles == null || destFile == null) {
 			throw new NullPointerException(sourceFiles == null ? "sourceFile"
 					: "destFile" + " cannot be null");
@@ -624,10 +649,13 @@ public class FileUtil {
 						sourceFile.getName());
 				filePaths[2 * i] = sourceFile.getAbsolutePath();
 				filePaths[2 * i + 1] = finalFile.getAbsolutePath();
-				if (!move2File(sourceFile, finalFile, operationType)) {
+				if (!move2File(sourceFile, finalFile, operationType, null)) {
 					Log.i("file", "fail");
 					flag = false;
 				}
+			}
+			if (context != null) {
+				MediaScannerConnection.scanFile(context, filePaths, null, null);
 			}
 			return flag;
 		} else {
@@ -637,13 +665,14 @@ public class FileUtil {
 	}
 
 	public static Runnable move2DirectoryAsync(final File[] sourceFiles,
-			final File destFile, final FileOperationListener listener) {
+			final File destFile, final Context context,
+			final FileOperationListener listener) {
 		class MoveTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
 				return move2Directory(sourceFiles, destFile,
-						FileUtil.Operation_Merge_And_Overwrite);
+						FileUtil.Operation_Merge_And_Overwrite, context);
 			}
 
 			@Override
@@ -664,7 +693,7 @@ public class FileUtil {
 		return null;
 	}
 
-	public static boolean delete(File[] files) {
+	public static boolean delete(File[] files, Context context) {
 		boolean flag = true;
 		String[] filePaths = new String[files.length];
 		if (files.length > 0) {
@@ -677,16 +706,19 @@ public class FileUtil {
 				}
 			}
 		}
+		if (context != null) {
+			MediaScannerConnection.scanFile(context, filePaths, null, null);
+		}
 		return flag;
 	}
 
 	public static Runnable deleteAsync(final File[] files,
-			final FileOperationListener listener) {
+			final Context context, final FileOperationListener listener) {
 		class DeleteTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
-				return delete(files);
+				return delete(files, context);
 			}
 
 			@Override
@@ -720,13 +752,31 @@ public class FileUtil {
 		return false;
 	}
 
-	public static Runnable deleteAsync(final File file,
+	public static boolean delete(File file, Context context) {
+		if (file == null) {
+			throw new NullPointerException("file is null");
+		}
+		boolean flag = false;
+		String[] filePaths = new String[] { file.getAbsolutePath() };
+		if (file.isFile()) {
+			flag = file.delete();
+		}
+		if (file.isDirectory()) {
+			flag = deleteFolder(file);
+		}
+		if (context != null) {
+			MediaScannerConnection.scanFile(context, filePaths, null, null);
+		}
+		return flag;
+	}
+
+	public static Runnable deleteAsync(final File file, final Context context,
 			final FileOperationListener listener) {
 		class DeleteTask extends AsyncTask<String, Integer, Boolean> {
 
 			@Override
 			protected Boolean doInBackground(String... params) {
-				return delete(file);
+				return delete(file, context);
 			}
 
 			@Override
