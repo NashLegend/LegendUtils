@@ -9,25 +9,25 @@ package com.example.legendutils;
 
 public final class R {
     public static final class array {
-        public static int TypeAudio=0x7f040001;
-        public static int TypeChm=0x7f04000d;
-        public static int TypeEBook=0x7f04000b;
-        public static int TypeExcel=0x7f040008;
-        public static int TypeHTML=0x7f040005;
-        public static int TypeImage=0x7f040000;
-        public static int TypePDF=0x7f04000a;
-        public static int TypePPT=0x7f040009;
-        public static int TypePackage=0x7f040003;
-        public static int TypeText=0x7f040006;
-        public static int TypeTorrent=0x7f04000c;
-        public static int TypeVideo=0x7f040002;
-        public static int TypeWord=0x7f040007;
-        public static int TypeZip=0x7f040004;
+        public static int TypeAudio=0x7f050001;
+        public static int TypeChm=0x7f05000d;
+        public static int TypeEBook=0x7f05000b;
+        public static int TypeExcel=0x7f050008;
+        public static int TypeHTML=0x7f050005;
+        public static int TypeImage=0x7f050000;
+        public static int TypePDF=0x7f05000a;
+        public static int TypePPT=0x7f050009;
+        public static int TypePackage=0x7f050003;
+        public static int TypeText=0x7f050006;
+        public static int TypeTorrent=0x7f05000c;
+        public static int TypeVideo=0x7f050002;
+        public static int TypeWord=0x7f050007;
+        public static int TypeZip=0x7f050004;
     }
     public static final class attr {
     }
     public static final class color {
-        public static int transparent=0x7f050000;
+        public static int transparent=0x7f060000;
     }
     public static final class drawable {
         public static int back_button=0x7f020000;
@@ -53,30 +53,30 @@ public final class R {
         public static int ic_launcher=0x7f020014;
     }
     public static final class id {
-        public static int button_OK=0x7f080010;
-        public static int button_dialog_file_cancel=0x7f080006;
-        public static int button_dialog_file_ok=0x7f080007;
-        public static int button_dialog_input_cancel=0x7f080009;
-        public static int button_dialog_input_ok=0x7f08000a;
-        public static int button_listdialog_cancel=0x7f08000c;
-        public static int button_listdialog_ok=0x7f08000d;
-        public static int checkbox_dialog_file_all=0x7f080003;
-        public static int checkbox_file_item_select=0x7f080017;
-        public static int edittext_dialog_file_path=0x7f080002;
-        public static int footer_layout_listdialog=0x7f08000b;
-        public static int image_file_icon=0x7f080015;
-        public static int imagebutton_dialog_file_back=0x7f080001;
-        public static int input_dialog_text=0x7f080008;
-        public static int item_check=0x7f080012;
-        public static int item_content=0x7f080013;
-        public static int item_layout=0x7f080011;
-        public static int layout_dialog_file_footer=0x7f080005;
-        public static int layout_dialog_file_header=0x7f080000;
-        public static int list_dialog_list=0x7f08000e;
-        public static int listview_dialog_file=0x7f080004;
-        public static int picker=0x7f08000f;
-        public static int rootFileItemView=0x7f080014;
-        public static int text_file_title=0x7f080016;
+        public static int button_OK=0x7f090010;
+        public static int button_dialog_file_cancel=0x7f090006;
+        public static int button_dialog_file_ok=0x7f090007;
+        public static int button_dialog_input_cancel=0x7f090009;
+        public static int button_dialog_input_ok=0x7f09000a;
+        public static int button_listdialog_cancel=0x7f09000c;
+        public static int button_listdialog_ok=0x7f09000d;
+        public static int checkbox_dialog_file_all=0x7f090003;
+        public static int checkbox_file_item_select=0x7f090017;
+        public static int edittext_dialog_file_path=0x7f090002;
+        public static int footer_layout_listdialog=0x7f09000b;
+        public static int image_file_icon=0x7f090015;
+        public static int imagebutton_dialog_file_back=0x7f090001;
+        public static int input_dialog_text=0x7f090008;
+        public static int item_check=0x7f090012;
+        public static int item_content=0x7f090013;
+        public static int item_layout=0x7f090011;
+        public static int layout_dialog_file_footer=0x7f090005;
+        public static int layout_dialog_file_header=0x7f090000;
+        public static int list_dialog_list=0x7f09000e;
+        public static int listview_dialog_file=0x7f090004;
+        public static int picker=0x7f09000f;
+        public static int rootFileItemView=0x7f090014;
+        public static int text_file_title=0x7f090016;
     }
     public static final class layout {
         public static int dialog_file=0x7f030000;
@@ -86,13 +86,16 @@ public final class R {
         public static int item_list=0x7f030004;
         public static int view_file_item=0x7f030005;
     }
+    public static final class raw {
+        public static int hanyu_pinyin=0x7f040000;
+    }
     public static final class string {
-        public static int app_name=0x7f060000;
-        public static int back=0x7f060005;
-        public static int cancel=0x7f060003;
-        public static int file_opener=0x7f060002;
-        public static int number_picker=0x7f060001;
-        public static int ok=0x7f060004;
+        public static int app_name=0x7f070000;
+        public static int back=0x7f070005;
+        public static int cancel=0x7f070003;
+        public static int file_opener=0x7f070002;
+        public static int number_picker=0x7f070001;
+        public static int ok=0x7f070004;
     }
     public static final class style {
         /** 
@@ -126,12 +129,12 @@ public final class R {
     
  API 14 theme customizations can go here. 
          */
-        public static int AppBaseTheme=0x7f070000;
+        public static int AppBaseTheme=0x7f080000;
         /**  Application theme. 
  All customizations that are NOT specific to a particular API-level can go here. 
          */
-        public static int AppTheme=0x7f070001;
-        public static int Dialog=0x7f070002;
-        public static int WPDialog=0x7f070003;
+        public static int AppTheme=0x7f080001;
+        public static int Dialog=0x7f080002;
+        public static int WPDialog=0x7f080003;
     }
 }
