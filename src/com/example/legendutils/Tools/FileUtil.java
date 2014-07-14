@@ -320,6 +320,27 @@ public class FileUtil {
 				includeFolder);
 	}
 
+	/**
+	 * @param file
+	 * @param includeHiddleFiles
+	 * @param includeFolder
+	 * @return
+	 */
+	public static int getNumFilesInFolder(File[] files,
+			boolean includeHiddleFiles, boolean includeFolder) {
+		int size = 0;
+		for (int i = 0; i < files.length; i++) {
+			File file = files[i];
+			if (file.isFile()) {
+				size++;
+			} else if (file.isDirectory()) {
+				size += getNumFilesInFolder(file, includeHiddleFiles,
+						includeFolder);
+			}
+		}
+		return size;
+	}
+
 	public static long getFileSize(File file) {
 		long size = 0L;
 		if (file != null && file.exists()) {
@@ -1276,12 +1297,14 @@ public class FileUtil {
 				}
 				if (file2.isDirectory()) {
 					size += getSubfilesNumberInFolder(file2,
-							includeHiddleFiles, includeFolder)
-							+ (includeFolder ? 1 : 0);
+							includeHiddleFiles, includeFolder);
 				} else {
 					size += 1;
 				}
 			}
+		}
+		if (includeFolder) {
+			size++;
 		}
 		return size;
 	}
