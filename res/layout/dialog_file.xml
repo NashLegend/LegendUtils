@@ -24,7 +24,8 @@
             android:id="@+id/edittext_dialog_file_path"
             android:layout_width="0dp"
             android:layout_height="48dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:singleLine="true" />
 
         <CheckBox
             android:id="@+id/checkbox_dialog_file_all"

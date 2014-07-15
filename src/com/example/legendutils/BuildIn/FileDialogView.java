@@ -44,6 +44,20 @@ public class FileDialogView extends FrameLayout implements OnClickListener,
 
 	public FileDialogView(Context context) {
 		super(context);
+		initView(context);
+	}
+
+	public FileDialogView(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		initView(context);
+	}
+
+	public FileDialogView(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+		initView(context);
+	}
+
+	private void initView(Context context) {
 		LayoutInflater inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.dialog_file, this);
@@ -64,14 +78,6 @@ public class FileDialogView extends FrameLayout implements OnClickListener,
 		adapter = new FileListAdapter(context);
 		adapter.setDialogView(this);
 		listView.setAdapter(adapter);
-	}
-
-	public FileDialogView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-	}
-
-	public FileDialogView(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
 	}
 
 	/**
