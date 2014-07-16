@@ -1270,6 +1270,9 @@ public class FileUtil {
 	 * 获得文件后缀
 	 */
 	public static String getFileSuffix(File file) {
+		if (file.isDirectory()) {
+			return "";
+		}
 		String fileName = file.getName();
 		String suffix = "";
 		int offset = fileName.lastIndexOf(".");
