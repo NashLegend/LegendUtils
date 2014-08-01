@@ -20,7 +20,7 @@ public class HanyuPinyinHelper {
 
 	private StringBuffer buffer = new StringBuffer();
 	private List<String> list = new ArrayList<String>();
-	private Properties p = new Properties();
+	private Properties allPinyin = new Properties();
 	private boolean isSimple = false;
 
 	public HanyuPinyinHelper(Context context) {
@@ -30,7 +30,7 @@ public class HanyuPinyinHelper {
 	public void init(Context context) {
 		try {
 			TypedValue typedValue = new TypedValue();
-			p.load(context.getResources().openRawResource(R.raw.hanyu_pinyin,
+			allPinyin.load(context.getResources().openRawResource(R.raw.hanyu_pinyin,
 					typedValue));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -41,7 +41,7 @@ public class HanyuPinyinHelper {
 		int codePointOfChar = c;
 		String codepointHexStr = Integer.toHexString(codePointOfChar)
 				.toUpperCase();
-		String str = (String) p.get(codepointHexStr);
+		String str = (String) allPinyin.get(codepointHexStr);
 		return str.split(",");
 	}
 
@@ -56,7 +56,7 @@ public class HanyuPinyinHelper {
 		if (str == null || "".equals(str))
 			return null;
 		this.isSimple = isSimple;
-		list.clear();
+		list = new ArrayList<String>();
 		buffer.delete(0, buffer.length());
 		convert(0, str);
 		return list;
@@ -70,7 +70,7 @@ public class HanyuPinyinHelper {
 	public List<String> hanyuPinYinConvert(String str) {
 		if (str == null || "".equals(str))
 			return null;
-		list.clear();
+		list = new ArrayList<String>();
 		buffer.delete(0, buffer.length());
 		this.isSimple = true;
 		convert(0, str);
