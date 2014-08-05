@@ -30,8 +30,8 @@ public class HanyuPinyinHelper {
 	public void init(Context context) {
 		try {
 			TypedValue typedValue = new TypedValue();
-			allPinyin.load(context.getResources().openRawResource(R.raw.hanyu_pinyin,
-					typedValue));
+			allPinyin.load(context.getResources().openRawResource(
+					R.raw.hanyu_pinyin, typedValue));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
