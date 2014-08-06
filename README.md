@@ -16,3 +16,5 @@ Various tools
 		return result;
 	}
 ```
+
+如你所见，那么ListDialog简直是画蛇添足……
