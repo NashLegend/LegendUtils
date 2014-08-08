@@ -324,7 +324,7 @@
 4F56 bi
 4F57 tuo
 4F58 she
-4F59 yu,tu
+4F59 yu
 4F5A yi,die
 4F5B fo,fu
 4F5C zuo
