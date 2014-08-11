@@ -16418,7 +16418,7 @@
 8FD6 ta
 8FD7 e
 8FD8 hai,huan
-8FD9 zhei,zhe
+8FD9 zhe,zhei
 8FDB jin
 8FDC yuan
 8FDD wei
