@@ -48,14 +48,17 @@ public class FileUtil {
     private static String FolderKey = ".folder.";
 
     /**
-     * 将当前程序不能直接操作的文件复制到一个临时目录下，改变权限，以便进行后续的读写操作,勿对文件夹进行此操作
+     * 将当前程序不能直接操作的文件复制到一个临时目录下，改变权限，以便进行后续的读写操作,勿对文件夹进行此操作。 删除的时候不好删除，最好是用哈希值
      * 
      * @param file
      * @param context
      * @return
      */
     public static File getTempFileForRoot(File file, Context context) {
-        File tmpFile = new File(context.getExternalCacheDir().getPath(), file.getAbsolutePath());
+        File tmpFile = new File(context.getExternalCacheDir().getPath(),
+                EncryptUtil.getStringDigestEncrypt(file.getAbsolutePath(), EncryptUtil.MD5)
+                        .substring(0, 12) + "_"
+                        + file.getName());
         if (!tmpFile.getParentFile().exists()) {
             tmpFile.getParentFile().mkdirs();
         }
