@@ -48,7 +48,7 @@ public class FileUtil {
     private static String FolderKey = ".folder.";
 
     /**
-     * 将当前程序不能直接操作的文件复制到一个临时目录下，改变权限，以便进行后续的读写操作,勿对文件夹进行此操作。 
+     * 将当前程序不能直接操作的文件复制到一个临时目录下，改变权限，以便进行后续的读写操作,勿对文件夹进行此操作。 并没有考虑文件中有特殊字符的情况。
      * 
      * @param file
      * @param context
@@ -62,11 +62,16 @@ public class FileUtil {
         if (!tmpFile.getParentFile().exists()) {
             tmpFile.getParentFile().mkdirs();
         }
-        String cpCommand = "cp -f " + file.getAbsolutePath() + " " + tmpFile.getAbsolutePath();
+        String cpCommand = "cp -f " + getCmdPath(file.getAbsolutePath()) + " "
+                + getCmdPath(tmpFile.getAbsolutePath());
         SystemUtil.shellExecute(cpCommand, true);
-        String chmodCommand = "chmod 777 " + tmpFile.getAbsolutePath();
+        String chmodCommand = "chmod 777 " + getCmdPath(tmpFile.getAbsolutePath());
         SystemUtil.shellExecute(chmodCommand, true);
         return tmpFile;
+    }
+
+    public static String parseFilePathCommand() {
+        return "";
     }
 
     /**
@@ -234,6 +239,19 @@ public class FileUtil {
 
     public static String getCmdPath(String path) {
         return path.replace(" ", "\\ ").replace("'", "\\'");
+    }
+
+    /**
+     * 不清楚到底有多少，没一个个的试……
+     * 
+     * @param path
+     * @param al
+     * @return
+     */
+    public static String getCmdPath(String path, boolean al) {
+        return path.replaceAll("\\$", "\\$").replaceAll(" ", "\\ ").replaceAll("\\*", "\\*")
+                .replaceAll("\\?", "\\?").replaceAll("\\\\", "\\\\").replaceAll(">", "\\>")
+                .replaceAll("'", "\\'");
     }
 
     /**
