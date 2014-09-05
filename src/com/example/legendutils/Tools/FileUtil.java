@@ -48,7 +48,7 @@ public class FileUtil {
     private static String FolderKey = ".folder.";
 
     /**
-     * 将当前程序不能直接操作的文件复制到一个临时目录下，改变权限，以便进行后续的读写操作,勿对文件夹进行此操作。 删除的时候不好删除，最好是用哈希值
+     * 将当前程序不能直接操作的文件复制到一个临时目录下，改变权限，以便进行后续的读写操作,勿对文件夹进行此操作。 
      * 
      * @param file
      * @param context
