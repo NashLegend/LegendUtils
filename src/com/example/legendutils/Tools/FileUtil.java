@@ -383,17 +383,25 @@ public class FileUtil {
     }
 
     public static long getFileSize(File file) {
+        return getFileSize(file, true);
+    }
+
+    public static long getFileSize(File file, boolean includeEmptyFolderSize) {
         long size = 0L;
         if (file != null && file.exists()) {
             File[] files = {
                     file
             };
-            return getFileSize(files);
+            return getFileSize(files, includeEmptyFolderSize);
         }
         return size;
     }
 
     public static long getFileSize(File[] files) {
+        return getFileSize(files, true);
+    }
+
+    public static long getFileSize(File[] files, boolean includeEmptyFolderSize) {
         if (files == null) {
             throw new NullPointerException("files cannot be null");
         }
@@ -402,27 +410,35 @@ public class FileUtil {
             File file = files[i];
             if (file != null && file.exists()) {
                 if (file.isDirectory()) {
-                    size += getSilgleFolderSize(file);
+                    size += getSilgleFolderSize(file, includeEmptyFolderSize);
                 } else {
                     size += file.length();
                 }
             }
         }
-
         return size;
     }
 
     public static boolean copy2File(File sourceFile, File destFile,
             int operationType, Context context) {
+        return copy2File(sourceFile, destFile, operationType, context, null);
+    }
+
+    private static boolean copy2File(File sourceFile, File destFile,
+            int operationType, Context context, InnerFileOperationListener listener) {
         boolean flag = true;
         if (ensureSourceAndDestFileValid(sourceFile, destFile, operationType)) {
             if (sourceFile.equals(destFile)) {
+                if (listener != null) {
+                    listener.OperationEnded = true;
+                    listener.result = true;
+                }
                 return true;
             }
             if (sourceFile.isFile()) {
-                flag = copy2SingleFile(sourceFile, destFile, operationType);
+                flag = copy2SingleFile(sourceFile, destFile, operationType, listener);
             } else {
-                flag = copy2SingleFolder(sourceFile, destFile, operationType);
+                flag = copy2SingleFolder(sourceFile, destFile, operationType, listener);
             }
         } else {
             flag = false;
@@ -432,6 +448,10 @@ public class FileUtil {
                     new String[] {
                         destFile.getAbsolutePath()
                     }, null, null);
+        }
+        if (listener != null) {
+            listener.OperationEnded = true;
+            listener.result = flag;
         }
         return flag;
     }
@@ -444,8 +464,32 @@ public class FileUtil {
 
             @Override
             protected Boolean doInBackground(String... params) {
-                return copy2File(sourceFile, destFile,
-                        FileUtil.Operation_Merge_And_Overwrite, context);
+                final InnerFileOperationListener innerListener = new InnerFileOperationListener();
+                innerListener.total = getFileSize(sourceFile, false);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        copy2File(sourceFile, destFile,
+                                FileUtil.Operation_Merge_And_Overwrite, context, innerListener);
+                    }
+                }).run();
+                int currentProcessed = 0;
+                if (innerListener.total > 0) {
+                    while (!innerListener.OperationEnded) {
+                        int processed = (int) (100 * innerListener.processed / innerListener.total);
+                        if (currentProcessed != processed) {
+                            currentProcessed = processed;
+                            publishProgress(currentProcessed);
+                        }
+                    }
+                }
+                return innerListener.result;
+            }
+
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                listener.onProgress(values[0]);
+                super.onProgressUpdate(values);
             }
 
             @Override
@@ -592,7 +636,6 @@ public class FileUtil {
             // 这里不必检查是否sourceFile和destFile是同一个文件，renameTo自然会返回true
             // renameTo当存在重名文件时将返回false,所以不可用。
             // 移动不是复制，所以只要deskFile不存在，直接renameTo即可，不必一个一个递归
-            // TODO
             if (sourceFile.equals(destFile)) {
                 return true;
             }
@@ -1370,19 +1413,21 @@ public class FileUtil {
         return size;
     }
 
-    private static long getSilgleFolderSize(File file) {
+    private static long getSilgleFolderSize(File file, boolean includeEmptyFolderSize) {
         long size = 0L;
         File[] files = file.listFiles();
         for (int i = 0; i < files.length; i++) {
             File file2 = files[i];
             if (file2.isDirectory()) {
-                size += getSilgleFolderSize(file2);
+                size += getSilgleFolderSize(file2, includeEmptyFolderSize);
             } else {
                 size += file2.length();
             }
         }
         // 文件夹占据4k,或者更多，取决于里面文件数量
-        size += file.length();
+        if (includeEmptyFolderSize) {
+            size += file.length();
+        }
         return size;
     }
 
@@ -1421,7 +1466,7 @@ public class FileUtil {
      * @return
      */
     private static boolean copy2SingleFolder(File sourceFile, File destFile,
-            int operationType) {
+            int operationType, InnerFileOperationListener listener) {
         if (destFile.exists()) {
             switch (operationType) {
                 case Operation_Ski_All:
@@ -1443,7 +1488,7 @@ public class FileUtil {
                     break;
             }
         }
-        // 至此destFile仍然可能存在,如果存在，一定是文件夹 TODO
+        // 至此destFile仍然可能存在,如果存在，一定是文件夹
         if (destFile.exists() || destFile.mkdirs()) {
             File[] files = sourceFile.listFiles();
             if (files != null) {
@@ -1453,12 +1498,12 @@ public class FileUtil {
                             sourceSubFile.getName());
                     if (sourceSubFile.isDirectory()) {
                         if (!copy2SingleFolder(sourceSubFile, destSubFile,
-                                operationType)) {
+                                operationType, listener)) {
                             return false;
                         }
                     } else {
                         if (!copy2SingleFile(sourceSubFile, destSubFile,
-                                operationType)) {
+                                operationType, listener)) {
                             return false;
                         }
                     }
@@ -1478,7 +1523,7 @@ public class FileUtil {
      * @return
      */
     private static boolean copy2SingleFile(File sourceFile, File destFile,
-            int operationType) {
+            int operationType, InnerFileOperationListener listener) {
         if (destFile.exists()) {
             if (operationType == Operation_Merge_And_Overwrite) {
                 // 合并文件夹，删除同名文件。只有这种情况才有可能不返回false
@@ -1500,8 +1545,12 @@ public class FileUtil {
                     destFile));
             byte[] buffer = new byte[1024 * 5];
             int len;
+            boolean hasListener = listener == null;
             while ((len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
+                if (hasListener) {
+                    listener.processed += len;
+                }
             }
         } catch (FileNotFoundException e) {
             copyOK = false;
@@ -1656,13 +1705,13 @@ public class FileUtil {
         }
         // 如果一个文件不存在，则isDirectory必然为false，而当mkdirs后isDirectory就是true了
         if (destFile.exists()) {
-            // 如果destFile存在且不是个文件则直接返回false，还是删除？ TODO
+            // 如果destFile存在且不是个文件则直接返回false
             if (!destFile.isDirectory()) {
                 return false;
             }
         } else {
             // 如果destFile不存在则创建文件夹，创建失败则返回false，有可能是没有权限也有可能是路径不对
-            // 也有可能destFile的父级目录却是个文件而不是目录 TODO
+            // 也有可能destFile的父级目录却是个文件而不是目录
             if (!destFile.mkdirs()) {
                 return false;
             }
@@ -1676,7 +1725,7 @@ public class FileUtil {
      * @param sourceFile 要复制或者移动的文件，必须存在。
      * @param destFile
      *            要移动到的目标文件（不是要移动到的目录！），不一定存在，若存在则删除，若其向上某一级得到的结果有可能是文件，则不合法，
-     *            因为这样此文件就不能创建，mkdirs不会成功 TODO
+     *            因为这样此文件就不能创建，mkdirs不会成功
      * @return 若返回true，则：destFile不存在，destFile的父级目录存在，只等复制过去
      */
     private static boolean ensureSourceAndDestFileValid(File sourceFile,
@@ -1857,6 +1906,18 @@ public class FileUtil {
         public void onProgress(int progress);
 
         public void onError(String message);
+
+    }
+
+    static class InnerFileOperationListener {
+
+        public boolean OperationEnded = false;
+
+        public boolean result = false;
+
+        public long processed = 0l;
+
+        public long total = 0l;
 
     }
 }
