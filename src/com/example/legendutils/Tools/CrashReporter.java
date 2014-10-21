@@ -1,4 +1,3 @@
-
 package com.example.legendutils.Tools;
 
 import java.io.ByteArrayOutputStream;
@@ -30,196 +29,193 @@ import android.telephony.TelephonyManager;
  * @author NashLegend
  */
 public class CrashReporter implements UncaughtExceptionHandler {
-    private Context mContext;
-    private CrashListener onCrashListener;
+	private Context mContext;
+	private CrashListener onCrashListener;
 
-    public CrashReporter(Context context) {
-        mContext = context;
-    }
+	public CrashReporter(Context context) {
+		mContext = context;
+	}
 
-    /*
-     * 发生未能捕获错误的时候调用。
-     */
-    @Override
-    public void uncaughtException(Thread thread, Throwable ex) {
-        String infoString = "";
-        ByteArrayOutputStream baos = null;
-        PrintStream printStream = null;
+	/*
+	 * 发生未能捕获错误的时候调用。
+	 */
+	@Override
+	public void uncaughtException(Thread thread, Throwable ex) {
+		String infoString = "";
+		ByteArrayOutputStream baos = null;
+		PrintStream printStream = null;
 
-        TelephonyManager telephonyManager = (TelephonyManager) mContext
-                .getSystemService(Context.TELEPHONY_SERVICE);
-        PackageManager pm = mContext.getPackageManager();
-        PackageInfo pi;
-        String versionCode = "";
-        String versionName = "";
-        try {
-            pi = pm.getPackageInfo(mContext.getPackageName(), 0);
-            versionCode = pi.versionCode + "";
-            versionName = pi.versionName == null ? "-1" : pi.versionName;
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
+		TelephonyManager telephonyManager = (TelephonyManager) mContext
+				.getSystemService(Context.TELEPHONY_SERVICE);
+		PackageManager pm = mContext.getPackageManager();
+		PackageInfo pi;
+		String versionCode = "";
+		String versionName = "";
+		try {
+			pi = pm.getPackageInfo(mContext.getPackageName(), 0);
+			versionCode = pi.versionCode + "";
+			versionName = pi.versionName == null ? "-1" : pi.versionName;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 
-        String mtypeString = android.os.Build.MODEL == null ? "-1" : android.os.Build.MODEL;
-        String mSystem = android.os.Build.VERSION.RELEASE == null ? "-1"
-                : android.os.Build.VERSION.RELEASE;
-        String manufacturer = android.os.Build.MANUFACTURER == null ? "-1"
-                : android.os.Build.MANUFACTURER;
-        String networkOperator = telephonyManager.getNetworkOperatorName() == null ? "-1"
-                : telephonyManager.getNetworkOperatorName();
-        String IMEI = telephonyManager.getDeviceId() == null ? "-1" : telephonyManager
-                .getDeviceId();
+		String mtypeString = android.os.Build.MODEL == null ? "-1"
+				: android.os.Build.MODEL;
+		String mSystem = android.os.Build.VERSION.RELEASE == null ? "-1"
+				: android.os.Build.VERSION.RELEASE;
+		String manufacturer = android.os.Build.MANUFACTURER == null ? "-1"
+				: android.os.Build.MANUFACTURER;
+		String networkOperator = telephonyManager.getNetworkOperatorName() == null ? "-1"
+				: telephonyManager.getNetworkOperatorName();
+		String IMEI = telephonyManager.getDeviceId() == null ? "-1"
+				: telephonyManager.getDeviceId();
 
-        infoString += "APP版本号：" + versionCode + "\n";
-        infoString += "APP版本名：" + versionName + "\n";
-        infoString += "手机型号：" + mtypeString + "\n";
-        infoString += "系统版本：" + mSystem + "\n";
-        infoString += "手机厂商：" + manufacturer + "\n";
-        infoString += "运营商：" + networkOperator + "\n";
-        infoString += "IMEI：" + IMEI + "\n";
+		infoString += "APP版本号：" + versionCode + "\n";
+		infoString += "APP版本名：" + versionName + "\n";
+		infoString += "手机型号：" + mtypeString + "\n";
+		infoString += "系统版本：" + mSystem + "\n";
+		infoString += "手机厂商：" + manufacturer + "\n";
+		infoString += "运营商：" + networkOperator + "\n";
+		infoString += "IMEI：" + IMEI + "\n";
 
-        long threadId = thread.getId();
-        infoString += ("ThreadInfo : Thread.getName()=" + thread.getName()
-                + " id=" + threadId + " state=" + thread.getState() + "\n");
-        try {
-            baos = new ByteArrayOutputStream();
-            printStream = new PrintStream(baos);
-            ex.printStackTrace(printStream);
-            byte[] data = baos.toByteArray();
-            infoString += new String(data);
-            data = null;
-        } catch (Exception e) {
+		long threadId = thread.getId();
+		infoString += ("ThreadInfo : Thread.getName()=" + thread.getName()
+				+ " id=" + threadId + " state=" + thread.getState() + "\n");
+		try {
+			baos = new ByteArrayOutputStream();
+			printStream = new PrintStream(baos);
+			ex.printStackTrace(printStream);
+			byte[] data = baos.toByteArray();
+			infoString += new String(data);
+			data = null;
+		} catch (Exception e) {
 
-        } finally {
-            try {
-                if (printStream != null) {
-                    printStream.close();
-                }
-                if (baos != null) {
-                    baos.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+		} finally {
+			try {
+				if (printStream != null) {
+					printStream.close();
+				}
+				if (baos != null) {
+					baos.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 
-        writeCrashLog(infoString);
+		writeCrashLog(infoString);
 
-        if (onCrashListener != null) {
-            onCrashListener.onCrash(infoString, thread, ex);
-        }
-    }
+		if (onCrashListener != null) {
+			onCrashListener.onCrash(infoString, thread, ex);
+		}
+	}
 
-    /**
-     * 向磁盘写入错误信息。
-     * 
-     * @param info 错误信息。
-     */
-    private void writeCrashLog(String info) {
-        FileOutputStream fos = null;
-        String path = Environment.getExternalStorageDirectory()
-                + "/Android/data/" + mContext.getPackageName()
-                + "/Log/CrashLog";
-        File file = new File(path);
-        try {
-            if (file.exists()) {
-                file.delete();
-            } else {
-                file.getParentFile().mkdirs();
-            }
-            file.createNewFile();
-            fos = new FileOutputStream(file);
-            fos.write(info.getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+	/**
+	 * 向磁盘写入错误信息。
+	 * 
+	 * @param info
+	 *            错误信息。
+	 */
+	private void writeCrashLog(String info) {
+		FileOutputStream fos = null;
+		File file = new File(mContext.getExternalFilesDir("Log"), "CrashLog");
+		try {
+			if (file.exists()) {
+				file.delete();
+			} else {
+				file.getParentFile().mkdirs();
+			}
+			file.createNewFile();
+			fos = new FileOutputStream(file);
+			fos.write(info.getBytes());
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (fos != null) {
+					fos.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
-    /**
-     * 读取存储在磁盘上的Error Log;
-     * 
-     * @param context
-     * @return
-     */
-    @SuppressWarnings("resource")
-    public static String getCrashLog(Context context) {
-        String CrashLog = "";
-        File file = new File(Environment.getExternalStorageDirectory()
-                + "/Android/data/" + context.getPackageName() + "/Log/CrashLog");
-        FileInputStream fis = null;
-        try {
-            if (file.exists()) {
-                byte[] data = new byte[(int) file.length()];
-                fis = new FileInputStream(file);
-                fis.read(data);
-                CrashLog = new String(data);
-                data = null;
-                fis.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+	/**
+	 * 读取存储在磁盘上的Error Log;
+	 * 
+	 * @param context
+	 * @return
+	 */
+	public static String getCrashLog(Context context) {
+		String CrashLog = "";
+		File file = new File(context.getExternalFilesDir("Log"), "CrashLog");
+		FileInputStream fis = null;
+		try {
+			if (file.exists()) {
+				byte[] data = new byte[(int) file.length()];
+				fis = new FileInputStream(file);
+				fis.read(data);
+				CrashLog = new String(data);
+				data = null;
+				fis.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (fis != null) {
+					fis.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 
-        return CrashLog;
-    }
+		return CrashLog;
+	}
 
-    /**
-     * 返回Crash Log文件；
-     * 
-     * @param context
-     * @return
-     */
-    public static File getCrashLogFile(Context context) {
-        File file = new File(Environment.getExternalStorageDirectory()
-                + "/Android/data/" + context.getPackageName() + "/Log/CrashLog");
+	/**
+	 * 返回Crash Log文件；
+	 * 
+	 * @param context
+	 * @return
+	 */
+	public static File getCrashLogFile(Context context) {
+		File file = new File(Environment.getExternalStorageDirectory()
+				+ "/Android/data/" + context.getPackageName() + "/Log/CrashLog");
 
-        return file;
-    }
+		return file;
+	}
 
-    public static void clearCrashLog(Context context) {
-        File file = new File(Environment.getExternalStorageDirectory()
-                + "/Android/data/" + context.getPackageName() + "/Log/CrashLog");
-        if (file.exists()) {
-            try {
-                file.delete();
-            } catch (Exception e) {
+	public static void clearCrashLog(Context context) {
+		File file = new File(Environment.getExternalStorageDirectory()
+				+ "/Android/data/" + context.getPackageName() + "/Log/CrashLog");
+		if (file.exists()) {
+			try {
+				file.delete();
+			} catch (Exception e) {
 
-            }
-        }
-    }
+			}
+		}
+	}
 
-    /**
-     * 设置崩溃时的回调
-     * 
-     * @param crashListener
-     */
-    public void setOnCrashListener(CrashListener crashListener) {
-        onCrashListener = crashListener;
-    }
+	/**
+	 * 设置崩溃时的回调
+	 * 
+	 * @param crashListener
+	 */
+	public void setOnCrashListener(CrashListener crashListener) {
+		onCrashListener = crashListener;
+	}
 
-    /**
-     * 发生UncaughtException时的回调
-     * 
-     * @author NashLegend
-     */
-    public interface CrashListener {
-        void onCrash(String info, Thread thread, Throwable ex);
-    }
+	/**
+	 * 发生UncaughtException时的回调
+	 * 
+	 * @author NashLegend
+	 */
+	public interface CrashListener {
+		void onCrash(String info, Thread thread, Throwable ex);
+	}
 
 }
