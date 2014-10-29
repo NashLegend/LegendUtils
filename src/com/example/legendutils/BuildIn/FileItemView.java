@@ -83,14 +83,6 @@ public class FileItemView extends FrameLayout implements OnClickListener,
 		checkBox.setOnCheckedChangeListener(this);
 	}
 
-	public void setFileItem(File file) {
-		setFileItem(new FileItem(file));
-	}
-
-	public void setFileItem(String path) {
-		setFileItem(new FileItem(path));
-	}
-
 	/**
 	 * 切换选中、未选中状态,fileItem.setSelected(boolean)先发生;
 	 */
