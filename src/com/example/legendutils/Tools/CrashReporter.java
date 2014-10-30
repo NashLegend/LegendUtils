@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.content.Context;
@@ -42,9 +45,6 @@ public class CrashReporter implements UncaughtExceptionHandler {
 	@Override
 	public void uncaughtException(Thread thread, Throwable ex) {
 		String infoString = "";
-		ByteArrayOutputStream baos = null;
-		PrintStream printStream = null;
-
 		TelephonyManager telephonyManager = (TelephonyManager) mContext
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		PackageManager pm = mContext.getPackageManager();
@@ -82,26 +82,27 @@ public class CrashReporter implements UncaughtExceptionHandler {
 		infoString += ("ThreadInfo : Thread.getName()=" + thread.getName()
 				+ " id=" + threadId + " state=" + thread.getState() + "\n");
 		try {
-			baos = new ByteArrayOutputStream();
-			printStream = new PrintStream(baos);
-			ex.printStackTrace(printStream);
-			byte[] data = baos.toByteArray();
-			infoString += new String(data);
-			data = null;
-		} catch (Exception e) {
-
-		} finally {
-			try {
-				if (printStream != null) {
-					printStream.close();
-				}
-				if (baos != null) {
-					baos.close();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+            final Writer result = new StringWriter();
+            final PrintWriter printWriter = new PrintWriter(result);
+            ex.printStackTrace(printWriter);
+            String stacktrace = result.toString();
+            infoString += stacktrace;
+     
+            infoString += "\n";
+            infoString += "Cause : \n";
+            infoString += "======= \n";
+            
+            Throwable cause = ex.getCause();
+            while (cause != null) {
+                cause.printStackTrace(printWriter);
+                infoString += result.toString();
+                cause = cause.getCause();
+            }
+            result.close();
+            printWriter.close();
+        } catch (Exception e) {
+            
+        }
 
 		writeCrashLog(infoString);
 
