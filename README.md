@@ -5,7 +5,7 @@ Various tools
 
 **markdown test below**
 
-``` Java
+``` 
 	public float getInterpolation(float x) {
 		float result;
 		if (x < 0.5) {
@@ -16,5 +16,3 @@ Various tools
 		return result;
 	}
 ```
-
-如你所见，那个ListDialog简直是画蛇添足……
