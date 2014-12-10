@@ -183,13 +183,13 @@ public class CrashReporter implements UncaughtExceptionHandler {
 	 * @return
 	 */
 	public static File getCrashLogFile(Context context) {
-		File file = new File(mContext.getExternalFilesDir("Log"), "CrashLog");
+		File file = new File(context.getExternalFilesDir("Log"), "CrashLog");
 
 		return file;
 	}
 
 	public static void clearCrashLog(Context context) {
-		File file = new File(mContext.getExternalFilesDir("Log"), "CrashLog");
+		File file = new File(context.getExternalFilesDir("Log"), "CrashLog");
 		if (file.exists()) {
 			try {
 				file.delete();
