@@ -150,7 +150,7 @@ public class CrashReporter implements UncaughtExceptionHandler {
 	 */
 	public static String getCrashLog(Context context) {
 		String CrashLog = "";
-		File file = new File(mContext.getExternalFilesDir("log"), "crashlog");
+		File file = new File(context.getExternalFilesDir("log"), "crashlog");
 		FileInputStream fis = null;
 		try {
 			if (file.exists()) {
@@ -181,15 +181,15 @@ public class CrashReporter implements UncaughtExceptionHandler {
 	 * 
 	 * @param context
 	 * @return
-	 */
+	 */m
 	public static File getCrashLogFile(Context context) {
-		File file = new File(mContext.getExternalFilesDir("log"), "crashlog");
+		File file = new File(context.getExternalFilesDir("log"), "crashlog");
 
 		return file;
 	}
 
 	public static void clearCrashLog(Context context) {
-		File file = new File(mContext.getExternalFilesDir("log"), "crashlog");
+		File file = new File(context.getExternalFilesDir("log"), "crashlog");
 		if (file.exists()) {
 			try {
 				file.delete();
