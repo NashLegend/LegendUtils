@@ -25,7 +25,7 @@ import android.telephony.TelephonyManager;
  * crashReporter.setOnCrashListener(xxx);
  * 如果在CrashListener.onCrash()里面想调用系统默认的Force Close对话框，可做如下操作：
  * 在执行Thread.setDefaultUncaughtExceptionHandler (crashReporter)之前先定义一个系统默认的
- * UncaughtExceptionHandler mUncaughtExceptionHandler;
+ * UncaughtExceptionHandler mUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
  * 然后在CrashListener.onCrash()里面添加mUncaughtExceptionHandler
  * .uncaughtException(thread, ex);
  * 
