@@ -181,7 +181,7 @@ public class CrashReporter implements UncaughtExceptionHandler {
 	 * 
 	 * @param context
 	 * @return
-	 */m
+	 */
 	public static File getCrashLogFile(Context context) {
 		File file = new File(context.getExternalFilesDir("log"), "crashlog");
 
