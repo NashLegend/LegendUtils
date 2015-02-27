@@ -22,7 +22,7 @@ public class TextUtil {
 	public static String[] splitIgnoringEmpty(String sourceString,
 			String splitter) {
 		String[] orig = sourceString.split(splitter);
-		int len = sourceString.length();
+		int len = orig.length;
 		int olen = len;
 		for (int i = 0; i < orig.length; i++) {
 			if ("".equals(orig[i])) {
