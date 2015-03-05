@@ -23,8 +23,8 @@ public class InputDialog extends Dialog {
 	public static class Builder {
 		private Context mContext;
 		private String title = "";
-		private String OkayString = "Okay";
-		private String NayString = "Nay";
+		private String OkayString = "确定";
+		private String NayString = "取消";
 		private String input = "";
 		private InputDialog dialog;
 		private boolean canceledOnTouchOutside = true;
