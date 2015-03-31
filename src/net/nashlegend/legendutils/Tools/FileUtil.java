@@ -419,11 +419,6 @@ public class FileUtil {
         return size;
     }
 
-    public static boolean copy2File(File sourceFile, File destFile,
-            int operationType, Context context) {
-        return copy2File(sourceFile, destFile, operationType, context, null);
-    }
-
     private static boolean copy2File(File sourceFile, File destFile,
             int operationType, Context context, InnerFileOperationListener listener) {
         boolean flag = true;
@@ -460,35 +455,29 @@ public class FileUtil {
             final File destFile, final Context context,
             final FileOperationListener listener) {
 
-        class CopyTask extends AsyncTask<String, Integer, Boolean> {
+        class CopyTask extends AsyncTask<String, Long, Boolean> {
 
             @Override
             protected Boolean doInBackground(String... params) {
-                final InnerFileOperationListener innerListener = new InnerFileOperationListener();
-                innerListener.total = getFileSize(sourceFile, false);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        copy2File(sourceFile, destFile,
-                                FileUtil.Operation_Merge_And_Overwrite, context, innerListener);
-                    }
-                }).run();
-                int currentProcessed = 0;
-                if (innerListener.total > 0) {
-                    while (!innerListener.OperationEnded) {
-                        int processed = (int) (100 * innerListener.processed / innerListener.total);
-                        if (currentProcessed != processed) {
-                            currentProcessed = processed;
-                            publishProgress(currentProcessed);
+                InnerFileOperationListener innerListener = null;
+                if (listener != null) {
+                    innerListener = new InnerFileOperationListener() {
+
+                        @Override
+                        public void processed(int l) {
+                            processed += l;
+                            publishProgress(processed, total);
                         }
-                    }
+                    };
+                    innerListener.total = getFileSize(sourceFile, false);
                 }
-                return innerListener.result;
+                return copy2File(sourceFile, destFile,
+                        FileUtil.Operation_Merge_And_Overwrite, context, innerListener);
             }
 
             @Override
-            protected void onProgressUpdate(Integer... values) {
-                listener.onProgress(values[0]);
+            protected void onProgressUpdate(Long... values) {
+                listener.onProgress(values[0], values[1]);
                 super.onProgressUpdate(values);
             }
 
@@ -512,7 +501,7 @@ public class FileUtil {
     }
 
     public static boolean copy2Directory(File sourceFile, File destFile,
-            int operationType, Context context) {
+            int operationType, Context context, InnerFileOperationListener listener) {
         if (sourceFile == null || destFile == null) {
             throw new NullPointerException(sourceFile == null ? "sourceFile"
                     : "destFile" + " cannot be null");
@@ -523,18 +512,36 @@ public class FileUtil {
         File[] sourceFiles = {
                 sourceFile
         };
-        return copy2Directory(sourceFiles, destFile, operationType, context);
+        return copy2Directory(sourceFiles, destFile, operationType, context, listener);
     }
 
     public static Runnable copy2DirectoryAsync(final File sourceFile,
             final File destFile, final Context context,
             final FileOperationListener listener) {
-        class CopyTask extends AsyncTask<String, Integer, Boolean> {
+        class CopyTask extends AsyncTask<String, Long, Boolean> {
 
             @Override
             protected Boolean doInBackground(String... params) {
+                InnerFileOperationListener innerListener = null;
+                if (listener != null) {
+                    innerListener = new InnerFileOperationListener() {
+
+                        @Override
+                        public void processed(int l) {
+                            processed += l;
+                            publishProgress(processed, total);
+                        }
+                    };
+                    innerListener.total = getFileSize(sourceFile, false);
+                }
                 return copy2Directory(sourceFile, destFile,
-                        FileUtil.Operation_Merge_And_Overwrite, context);
+                        FileUtil.Operation_Merge_And_Overwrite, context, innerListener);
+            }
+
+            @Override
+            protected void onProgressUpdate(Long... values) {
+                listener.onProgress(values[0], values[1]);
+                super.onProgressUpdate(values);
             }
 
             @Override
@@ -556,7 +563,7 @@ public class FileUtil {
     }
 
     public static boolean copy2Directory(File[] sourceFiles, File destFile,
-            int operationType, Context context) {
+            int operationType, Context context, InnerFileOperationListener listener) {
 
         if (sourceFiles == null || destFile == null) {
             throw new NullPointerException(sourceFiles == null ? "sourceFile"
@@ -579,7 +586,7 @@ public class FileUtil {
                 File finalFile = new File(destFile.getAbsolutePath(),
                         sourceFile.getName());
                 filePaths[i] = finalFile.getAbsolutePath();
-                if (!copy2File(sourceFile, finalFile, operationType, null)) {
+                if (!copy2File(sourceFile, finalFile, operationType, context, listener)) {
                     flag = false;
                     break;
                 }
@@ -596,12 +603,30 @@ public class FileUtil {
     public static Runnable copy2DirectoryAsync(final File[] sourceFiles,
             final File destFile, final Context context,
             final FileOperationListener listener) {
-        class CopyTask extends AsyncTask<String, Integer, Boolean> {
+        class CopyTask extends AsyncTask<String, Long, Boolean> {
 
             @Override
             protected Boolean doInBackground(String... params) {
+                InnerFileOperationListener innerListener = null;
+                if (listener != null) {
+                    innerListener = new InnerFileOperationListener() {
+
+                        @Override
+                        public void processed(int l) {
+                            processed += l;
+                            publishProgress(processed, total);
+                        }
+                    };
+                    innerListener.total = getFileSize(sourceFiles, false);
+                }
                 return copy2Directory(sourceFiles, destFile,
-                        FileUtil.Operation_Merge_And_Overwrite, context);
+                        FileUtil.Operation_Merge_And_Overwrite, context, innerListener);
+            }
+
+            @Override
+            protected void onProgressUpdate(Long... values) {
+                listener.onProgress(values[0], values[1]);
+                super.onProgressUpdate(values);
             }
 
             @Override
@@ -1545,11 +1570,11 @@ public class FileUtil {
                     destFile));
             byte[] buffer = new byte[1024 * 5];
             int len;
-            boolean hasListener = listener == null;
+            boolean hasListener = listener != null;
             while ((len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
                 if (hasListener) {
-                    listener.processed += len;
+                    listener.processed(len);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -1903,13 +1928,16 @@ public class FileUtil {
 
         public void onComplete();
 
-        public void onProgress(int progress);
+        public void onProgress(long progress, long total);
 
         public void onError(String message);
 
     }
 
     static class InnerFileOperationListener {
+
+        public void processed(int l) {
+        };
 
         public boolean OperationEnded = false;
 
